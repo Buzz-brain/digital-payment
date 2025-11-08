@@ -38,6 +38,9 @@ All colors MUST be HSL.
     --success: 142 76% 36%;
     --success-foreground: 0 0% 100%;
 
+    --warning: 45 93% 47%;
+    --warning-foreground: 0 0% 100%;
+
     --border: 214 32% 91%;
     --input: 214 32% 91%;
     --ring: 214 95% 50%;
@@ -47,8 +50,11 @@ All colors MUST be HSL.
     /* DPI Custom */
     --gradient-primary: linear-gradient(135deg, hsl(214 95% 50%), hsl(214 95% 35%));
     --gradient-light: linear-gradient(180deg, hsl(0 0% 100%), hsl(210 40% 98%));
+    --gradient-elegant: linear-gradient(135deg, hsl(214 95% 50% / 0.1), hsl(214 95% 70% / 0.05));
     --shadow-card: 0 4px 6px -1px hsl(214 95% 50% / 0.1), 0 2px 4px -1px hsl(214 95% 50% / 0.06);
     --shadow-elevated: 0 10px 15px -3px hsl(214 95% 50% / 0.15), 0 4px 6px -2px hsl(214 95% 50% / 0.08);
+    --shadow-elegant: 0 10px 30px -10px hsl(214 95% 50% / 0.3);
+    --shadow-glow: 0 0 40px hsl(214 95% 70% / 0.4);
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
     --sidebar-background: 0 0% 98%;
@@ -98,6 +104,9 @@ All colors MUST be HSL.
     --success: 142 76% 36%;
     --success-foreground: 0 0% 100%;
 
+    --warning: 45 93% 47%;
+    --warning-foreground: 217 33% 10%;
+
     --border: 217 33% 20%;
     --input: 217 33% 20%;
     --ring: 214 95% 50%;
@@ -105,8 +114,11 @@ All colors MUST be HSL.
     /* DPI Custom Dark */
     --gradient-primary: linear-gradient(135deg, hsl(214 95% 50%), hsl(214 95% 35%));
     --gradient-light: linear-gradient(180deg, hsl(217 33% 10%), hsl(217 33% 13%));
+    --gradient-elegant: linear-gradient(135deg, hsl(214 95% 50% / 0.15), hsl(214 95% 70% / 0.08));
     --shadow-card: 0 4px 6px -1px hsl(0 0% 0% / 0.3), 0 2px 4px -1px hsl(0 0% 0% / 0.2);
     --shadow-elevated: 0 10px 15px -3px hsl(0 0% 0% / 0.4), 0 4px 6px -2px hsl(0 0% 0% / 0.3);
+    --shadow-elegant: 0 10px 30px -10px hsl(0 0% 0% / 0.5);
+    --shadow-glow: 0 0 40px hsl(214 95% 50% / 0.3);
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
