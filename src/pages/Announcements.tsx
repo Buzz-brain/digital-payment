@@ -1,0 +1,131 @@
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useTranslation } from "react-i18next";
+import { Megaphone, X, Calendar, AlertCircle } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { mockAnnouncements } from "@/data/mockData";
+import { format } from "date-fns";
+
+const Announcements = () => {
+  const { t } = useTranslation();
+  const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
+
+  const getPriorityColor = (priority: string): "default" | "destructive" | "secondary" => {
+    switch (priority) {
+      case "high":
+        return "destructive";
+      case "medium":
+        return "default";
+      case "low":
+        return "secondary";
+      default:
+        return "default";
+    }
+  };
+
+  const getCategoryIcon = (category: string) => {
+    switch (category) {
+      case "disbursement":
+        return "💰";
+      case "update":
+        return "🔄";
+      case "maintenance":
+        return "🔧";
+      default:
+        return "📢";
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background py-12 px-4">
+      <div className="container max-w-4xl mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <div className="flex items-center gap-3 mb-8">
+            <div className="p-3 rounded-full bg-primary/10">
+              <Megaphone className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold">{t("announcements")}</h1>
+              <p className="text-muted-foreground">{t("latestUpdates")}</p>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            {mockAnnouncements.map((announcement, index) => (
+              <motion.div
+                key={announcement.id}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.1 }}
+              >
+                <Card
+                  className="cursor-pointer hover:shadow-lg transition-all duration-300 hover-scale"
+                  onClick={() => setSelectedAnnouncement(announcement)}
+                >
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3">
+                        <span className="text-3xl">{getCategoryIcon(announcement.category)}</span>
+                        <div>
+                          <CardTitle className="text-xl">{announcement.title}</CardTitle>
+                          <div className="flex items-center gap-2 mt-2">
+                            <Badge variant={getPriorityColor(announcement.priority)}>
+                              {announcement.priority}
+                            </Badge>
+                            <span className="text-sm text-muted-foreground flex items-center gap-1">
+                              <Calendar className="h-3 w-3" />
+                              {format(new Date(announcement.date), "MMM dd, yyyy")}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground line-clamp-2">
+                      {announcement.content}
+                    </p>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+
+        <Dialog open={!!selectedAnnouncement} onOpenChange={() => setSelectedAnnouncement(null)}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-3">
+                <span className="text-3xl">{selectedAnnouncement && getCategoryIcon(selectedAnnouncement.category)}</span>
+                {selectedAnnouncement?.title}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <Badge variant={(selectedAnnouncement && getPriorityColor(selectedAnnouncement.priority)) || "default"}>
+                  {selectedAnnouncement?.priority}
+                </Badge>
+                <span className="text-sm text-muted-foreground flex items-center gap-1">
+                  <Calendar className="h-3 w-3" />
+                  {selectedAnnouncement && format(new Date(selectedAnnouncement.date), "MMMM dd, yyyy")}
+                </span>
+              </div>
+              <p className="text-foreground leading-relaxed">
+                {selectedAnnouncement?.content}
+              </p>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
+    </div>
+  );
+};
+
+export default Announcements;
