@@ -26,6 +26,10 @@ import Disbursements from "./pages/admin/Disbursements";
 import Analytics from "./pages/admin/Analytics";
 import AnnouncementsManagement from "./pages/admin/AnnouncementsManagement";
 import FeedbackReview from "./pages/admin/FeedbackReview";
+import NINManagement from "./pages/admin/NINManagement";
+import PollsManagement from "./pages/admin/PollsManagement";
+import AdminNotifications from "./pages/admin/AdminNotifications";
+import Polls from "./pages/Polls";
 
 const queryClient = new QueryClient();
 
@@ -96,6 +100,30 @@ const App = () => {
                   element={
                     <AdminProtectedRoute>
                       <FeedbackReview />
+                    </AdminProtectedRoute>
+                  }
+                />
+                <Route
+                  path="nin-management"
+                  element={
+                    <AdminProtectedRoute>
+                      <NINManagement />
+                    </AdminProtectedRoute>
+                  }
+                />
+                <Route
+                  path="polls"
+                  element={
+                    <AdminProtectedRoute>
+                      <PollsManagement />
+                    </AdminProtectedRoute>
+                  }
+                />
+                <Route
+                  path="notifications"
+                  element={
+                    <AdminProtectedRoute>
+                      <AdminNotifications />
                     </AdminProtectedRoute>
                   }
                 />
@@ -172,6 +200,14 @@ const App = () => {
                       element={
                         <ProtectedRoute>
                           <Notifications />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/polls"
+                      element={
+                        <ProtectedRoute>
+                          <Polls />
                         </ProtectedRoute>
                       }
                     />

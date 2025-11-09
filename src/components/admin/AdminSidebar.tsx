@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, DollarSign, BarChart3, Megaphone, MessageSquare, LogOut } from 'lucide-react';
+import { LayoutDashboard, Users, DollarSign, BarChart3, Megaphone, MessageSquare, LogOut, CreditCard, Bell, Vote } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useAdminStore } from '@/store/adminStore';
 import { useNavigate } from 'react-router-dom';
@@ -7,10 +7,13 @@ import { toast } from '@/hooks/use-toast';
 const navItems = [
   { to: '/admin/dashboard', icon: LayoutDashboard, label: 'Overview' },
   { to: '/admin/beneficiaries', icon: Users, label: 'Beneficiaries' },
+  { to: '/admin/nin-management', icon: CreditCard, label: 'NIN Management' },
   { to: '/admin/disbursements', icon: DollarSign, label: 'Disbursements' },
   { to: '/admin/analytics', icon: BarChart3, label: 'Analytics' },
+  { to: '/admin/polls', icon: Vote, label: 'Polls' },
   { to: '/admin/announcements', icon: Megaphone, label: 'Announcements' },
   { to: '/admin/feedback', icon: MessageSquare, label: 'Feedback' },
+  { to: '/admin/notifications', icon: Bell, label: 'Notifications' },
 ];
 
 export function AdminSidebar() {

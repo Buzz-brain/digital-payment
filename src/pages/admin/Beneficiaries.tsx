@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Filter, MoreVertical, UserCheck, UserX, Ban } from 'lucide-react';
+import { Search, Filter, MoreVertical, UserCheck, UserX, Ban, Eye, Edit, Trash2 } from 'lucide-react';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { AdminNavbar } from '@/components/admin/AdminNavbar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,19 +8,24 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { mockBeneficiaries } from '@/data/mockAdminData';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { mockBeneficiaries, Beneficiary } from '@/data/mockAdminData';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { toast } from '@/hooks/use-toast';
 
 export default function Beneficiaries() {
+  const [beneficiaries, setBeneficiaries] = useState(mockBeneficiaries);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [selectedBeneficiary, setSelectedBeneficiary] = useState<Beneficiary | null>(null);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
 
-  const filteredBeneficiaries = mockBeneficiaries.filter((ben) => {
+  const filteredBeneficiaries = beneficiaries.filter((ben) => {
     const matchesSearch =
       ben.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       ben.nin.includes(searchTerm) ||
@@ -28,6 +33,30 @@ export default function Beneficiaries() {
     const matchesStatus = statusFilter === 'all' || ben.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
+
+  const handleViewDetails = (beneficiary: Beneficiary) => {
+    setSelectedBeneficiary(beneficiary);
+    setIsDetailOpen(true);
+  };
+
+  const handleStatusChange = (id: string, newStatus: 'active' | 'inactive' | 'suspended') => {
+    setBeneficiaries(beneficiaries.map(b => 
+      b.id === id ? { ...b, status: newStatus } : b
+    ));
+    toast({
+      title: 'Status Updated',
+      description: `Beneficiary status changed to ${newStatus}`,
+    });
+  };
+
+  const handleDelete = (id: string) => {
+    setBeneficiaries(beneficiaries.filter(b => b.id !== id));
+    toast({
+      title: 'Beneficiary Deleted',
+      description: 'The beneficiary has been removed from the system',
+      variant: 'destructive',
+    });
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -133,17 +162,34 @@ export default function Beneficiaries() {
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
-                                <DropdownMenuItem>
-                                  <UserCheck className="w-4 h-4 mr-2" />
+                                <DropdownMenuItem onClick={() => handleViewDetails(beneficiary)}>
+                                  <Eye className="w-4 h-4 mr-2" />
                                   View Details
                                 </DropdownMenuItem>
-                                <DropdownMenuItem>
-                                  <UserX className="w-4 h-4 mr-2" />
-                                  Deactivate
-                                </DropdownMenuItem>
-                                <DropdownMenuItem className="text-destructive">
-                                  <Ban className="w-4 h-4 mr-2" />
-                                  Suspend
+                                {beneficiary.status !== 'active' && (
+                                  <DropdownMenuItem onClick={() => handleStatusChange(beneficiary.id, 'active')}>
+                                    <UserCheck className="w-4 h-4 mr-2" />
+                                    Activate
+                                  </DropdownMenuItem>
+                                )}
+                                {beneficiary.status !== 'inactive' && (
+                                  <DropdownMenuItem onClick={() => handleStatusChange(beneficiary.id, 'inactive')}>
+                                    <UserX className="w-4 h-4 mr-2" />
+                                    Deactivate
+                                  </DropdownMenuItem>
+                                )}
+                                {beneficiary.status !== 'suspended' && (
+                                  <DropdownMenuItem onClick={() => handleStatusChange(beneficiary.id, 'suspended')}>
+                                    <Ban className="w-4 h-4 mr-2" />
+                                    Suspend
+                                  </DropdownMenuItem>
+                                )}
+                                <DropdownMenuItem 
+                                  className="text-destructive"
+                                  onClick={() => handleDelete(beneficiary.id)}
+                                >
+                                  <Trash2 className="w-4 h-4 mr-2" />
+                                  Delete
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
@@ -155,6 +201,91 @@ export default function Beneficiaries() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Beneficiary Detail Modal */}
+            <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
+              <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle>Beneficiary Details</DialogTitle>
+                </DialogHeader>
+                {selectedBeneficiary && (
+                  <div className="space-y-4 mt-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Full Name</p>
+                        <p className="font-medium">{selectedBeneficiary.fullName}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">NIN</p>
+                        <p className="font-mono">{selectedBeneficiary.nin}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Phone</p>
+                        <p className="font-medium">{selectedBeneficiary.phone}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Email</p>
+                        <p className="font-medium">{selectedBeneficiary.email}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Status</p>
+                        <Badge className={getStatusColor(selectedBeneficiary.status)}>
+                          {selectedBeneficiary.status}
+                        </Badge>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Balance</p>
+                        <p className="font-bold text-lg">₦{selectedBeneficiary.balance.toLocaleString()}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Total Received</p>
+                        <p className="font-medium text-success">₦{selectedBeneficiary.totalReceived.toLocaleString()}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Total Withdrawn</p>
+                        <p className="font-medium text-muted-foreground">₦{selectedBeneficiary.totalWithdrawn.toLocaleString()}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Registered Date</p>
+                        <p className="font-medium">{new Date(selectedBeneficiary.registeredDate).toLocaleDateString()}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Last Login</p>
+                        <p className="font-medium">{new Date(selectedBeneficiary.lastLogin).toLocaleString()}</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2 pt-4 border-t">
+                      <Button
+                        variant="outline"
+                        onClick={() => handleStatusChange(selectedBeneficiary.id, 'active')}
+                        disabled={selectedBeneficiary.status === 'active'}
+                      >
+                        <UserCheck className="w-4 h-4 mr-2" />
+                        Activate
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => handleStatusChange(selectedBeneficiary.id, 'suspended')}
+                        disabled={selectedBeneficiary.status === 'suspended'}
+                      >
+                        <Ban className="w-4 h-4 mr-2" />
+                        Suspend
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        onClick={() => {
+                          handleDelete(selectedBeneficiary.id);
+                          setIsDetailOpen(false);
+                        }}
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Delete
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </DialogContent>
+            </Dialog>
           </motion.div>
         </main>
       </div>

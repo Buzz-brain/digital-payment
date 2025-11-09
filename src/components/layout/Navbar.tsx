@@ -35,6 +35,7 @@ const Navbar = () => {
     ? [
         { path: '/dashboard', label: t('dashboard') },
         { path: '/transactions', label: t('transactions') },
+        { path: '/polls', label: 'Polls' },
         { path: '/announcements', label: t('announcements') },
       ]
     : [];
