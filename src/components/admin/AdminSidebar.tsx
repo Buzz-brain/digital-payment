@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, DollarSign, BarChart3, Megaphone, MessageSquare, LogOut, CreditCard, Bell, Vote } from 'lucide-react';
+import { LayoutDashboard, Users, DollarSign, BarChart3, Megaphone, MessageSquare, LogOut, CreditCard, Bell, Vote, FileText } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useAdminStore } from '@/store/adminStore';
 import { useNavigate } from 'react-router-dom';
@@ -13,6 +13,7 @@ const navItems = [
   { to: '/admin/polls', icon: Vote, label: 'Polls' },
   { to: '/admin/announcements', icon: Megaphone, label: 'Announcements' },
   { to: '/admin/feedback', icon: MessageSquare, label: 'Feedback' },
+  { to: '/admin/audit-logs', icon: FileText, label: 'Audit Logs' },
   { to: '/admin/notifications', icon: Bell, label: 'Notifications' },
 ];
 

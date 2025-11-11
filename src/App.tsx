@@ -29,6 +29,7 @@ import FeedbackReview from "./pages/admin/FeedbackReview";
 import NINManagement from "./pages/admin/NINManagement";
 import PollsManagement from "./pages/admin/PollsManagement";
 import AdminNotifications from "./pages/admin/AdminNotifications";
+import AuditLogs from "./pages/admin/AuditLogs";
 import Polls from "./pages/Polls";
 
 const queryClient = new QueryClient();
@@ -124,6 +125,14 @@ const App = () => {
                   element={
                     <AdminProtectedRoute>
                       <AdminNotifications />
+                    </AdminProtectedRoute>
+                  }
+                />
+                <Route
+                  path="audit-logs"
+                  element={
+                    <AdminProtectedRoute>
+                      <AuditLogs />
                     </AdminProtectedRoute>
                   }
                 />

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, BarChart3, Edit, Trash2, Eye, Clock } from 'lucide-react';
+import { Plus, BarChart3, Edit, Trash2, Eye, Clock, Download } from 'lucide-react';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { AdminNavbar } from '@/components/admin/AdminNavbar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { mockPolls, Poll } from '@/data/mockAdminData';
 import { toast } from '@/hooks/use-toast';
+import { exportToCSV, exportToPDF } from '@/lib/exportUtils';
 
 export default function PollsManagement() {
   const [polls, setPolls] = useState(mockPolls);
@@ -104,6 +105,31 @@ export default function PollsManagement() {
     }
   };
 
+  const handleExportCSV = () => {
+    const exportData = polls.map(poll => ({
+      title: poll.title,
+      category: poll.category,
+      status: poll.status,
+      totalVotes: poll.totalVotes,
+      startDate: poll.startDate,
+      endDate: poll.endDate,
+      createdBy: poll.createdBy,
+    }));
+    
+    exportToCSV(
+      exportData,
+      `polls_${new Date().toISOString().split('T')[0]}`,
+      [
+        { header: 'Title', key: 'title' },
+        { header: 'Category', key: 'category' },
+        { header: 'Status', key: 'status' },
+        { header: 'Total Votes', key: 'totalVotes' },
+        { header: 'Start Date', key: 'startDate' },
+        { header: 'End Date', key: 'endDate' },
+      ]
+    );
+  };
+
   return (
     <div className="flex min-h-screen bg-background">
       <AdminSidebar />
@@ -121,99 +147,104 @@ export default function PollsManagement() {
                   Create and manage community polls
                 </p>
               </div>
-              <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-                <DialogTrigger asChild>
-                  <Button>
-                    <Plus className="w-4 h-4 mr-2" />
-                    Create Poll
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-2xl">
-                  <DialogHeader>
-                    <DialogTitle>Create New Poll</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4 mt-4">
-                    <div>
-                      <Label htmlFor="title">Poll Title</Label>
-                      <Input
-                        id="title"
-                        value={newPoll.title}
-                        onChange={(e) => setNewPoll({ ...newPoll, title: e.target.value })}
-                        placeholder="Enter poll title"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="description">Description</Label>
-                      <Textarea
-                        id="description"
-                        value={newPoll.description}
-                        onChange={(e) => setNewPoll({ ...newPoll, description: e.target.value })}
-                        placeholder="Enter poll description"
-                        rows={3}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="category">Category</Label>
-                      <Select
-                        value={newPoll.category}
-                        onValueChange={(value) => setNewPoll({ ...newPoll, category: value })}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select category" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Disbursement">Disbursement</SelectItem>
-                          <SelectItem value="Policy">Policy</SelectItem>
-                          <SelectItem value="Technology">Technology</SelectItem>
-                          <SelectItem value="General">General</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="startDate">Start Date</Label>
-                        <Input
-                          id="startDate"
-                          type="datetime-local"
-                          value={newPoll.startDate}
-                          onChange={(e) => setNewPoll({ ...newPoll, startDate: e.target.value })}
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="endDate">End Date</Label>
-                        <Input
-                          id="endDate"
-                          type="datetime-local"
-                          value={newPoll.endDate}
-                          onChange={(e) => setNewPoll({ ...newPoll, endDate: e.target.value })}
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <Label>Poll Options (minimum 2)</Label>
-                      {newPoll.options.map((option, index) => (
-                        <Input
-                          key={index}
-                          value={option}
-                          onChange={(e) => {
-                            const updated = [...newPoll.options];
-                            updated[index] = e.target.value;
-                            setNewPoll({ ...newPoll, options: updated });
-                          }}
-                          placeholder={`Option ${index + 1}`}
-                          className="mt-2"
-                        />
-                      ))}
-                    </div>
-                    <Button onClick={handleCreatePoll} className="w-full">
+              <div className="flex gap-2">
+                <Button onClick={handleExportCSV} variant="outline" className="gap-2">
+                  <Download className="h-4 w-4" />
+                  Export CSV
+                </Button>
+                <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+                  <DialogTrigger asChild>
+                    <Button>
+                      <Plus className="w-4 h-4 mr-2" />
                       Create Poll
                     </Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                      <DialogTitle>Create New Poll</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 mt-4">
+                      <div>
+                        <Label htmlFor="title">Poll Title</Label>
+                        <Input
+                          id="title"
+                          value={newPoll.title}
+                          onChange={(e) => setNewPoll({ ...newPoll, title: e.target.value })}
+                          placeholder="Enter poll title"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="description">Description</Label>
+                        <Textarea
+                          id="description"
+                          value={newPoll.description}
+                          onChange={(e) => setNewPoll({ ...newPoll, description: e.target.value })}
+                          placeholder="Enter poll description"
+                          rows={3}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="category">Category</Label>
+                        <Select
+                          value={newPoll.category}
+                          onValueChange={(value) => setNewPoll({ ...newPoll, category: value })}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select category" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Disbursement">Disbursement</SelectItem>
+                            <SelectItem value="Policy">Policy</SelectItem>
+                            <SelectItem value="Technology">Technology</SelectItem>
+                            <SelectItem value="General">General</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="startDate">Start Date</Label>
+                          <Input
+                            id="startDate"
+                            type="datetime-local"
+                            value={newPoll.startDate}
+                            onChange={(e) => setNewPoll({ ...newPoll, startDate: e.target.value })}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="endDate">End Date</Label>
+                          <Input
+                            id="endDate"
+                            type="datetime-local"
+                            value={newPoll.endDate}
+                            onChange={(e) => setNewPoll({ ...newPoll, endDate: e.target.value })}
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <Label>Poll Options (minimum 2)</Label>
+                        {newPoll.options.map((option, index) => (
+                          <Input
+                            key={index}
+                            value={option}
+                            onChange={(e) => {
+                              const updated = [...newPoll.options];
+                              updated[index] = e.target.value;
+                              setNewPoll({ ...newPoll, options: updated });
+                            }}
+                            placeholder={`Option ${index + 1}`}
+                            className="mt-2"
+                          />
+                        ))}
+                      </div>
+                      <Button onClick={handleCreatePoll} className="w-full">
+                        Create Poll
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
             </div>
 
-            <div className="grid gap-6">
               {polls.map((poll) => (
                 <Card key={poll.id}>
                   <CardHeader>

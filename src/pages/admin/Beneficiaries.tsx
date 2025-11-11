@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Filter, MoreVertical, UserCheck, UserX, Ban, Eye, Edit, Trash2 } from 'lucide-react';
+import { Search, Filter, MoreVertical, UserCheck, UserX, Ban, Eye, Edit, Trash2, Download } from 'lucide-react';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { AdminNavbar } from '@/components/admin/AdminNavbar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,13 +17,20 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { toast } from '@/hooks/use-toast';
+import { exportToCSV, exportToPDF, formatCurrency, formatDate } from '@/lib/exportUtils';
+import { auditLogger } from '@/lib/auditLog';
+import { useAdminStore } from '@/store/adminStore';
+import { BulkOperations } from '@/components/admin/BulkOperations';
+import { AdvancedFilters } from '@/components/admin/AdvancedFilters';
 
 export default function Beneficiaries() {
+  const { admin } = useAdminStore();
   const [beneficiaries, setBeneficiaries] = useState(mockBeneficiaries);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedBeneficiary, setSelectedBeneficiary] = useState<Beneficiary | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [advancedFilters, setAdvancedFilters] = useState<Record<string, any>>({});
 
   const filteredBeneficiaries = beneficiaries.filter((ben) => {
     const matchesSearch =
@@ -31,7 +38,18 @@ export default function Beneficiaries() {
       ben.nin.includes(searchTerm) ||
       ben.email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || ben.status === statusFilter;
-    return matchesSearch && matchesStatus;
+    
+    // Advanced filters
+    const matchesAdvanced = Object.entries(advancedFilters).every(([key, value]) => {
+      if (!value) return true;
+      if (key === 'balance_min') return ben.balance >= Number(value);
+      if (key === 'balance_max') return ben.balance <= Number(value);
+      if (key === 'registered_from') return new Date(ben.registeredDate) >= new Date(value);
+      if (key === 'registered_to') return new Date(ben.registeredDate) <= new Date(value);
+      return true;
+    });
+    
+    return matchesSearch && matchesStatus && matchesAdvanced;
   });
 
   const handleViewDetails = (beneficiary: Beneficiary) => {
@@ -40,9 +58,23 @@ export default function Beneficiaries() {
   };
 
   const handleStatusChange = (id: string, newStatus: 'active' | 'inactive' | 'suspended') => {
+    const beneficiary = beneficiaries.find(b => b.id === id);
     setBeneficiaries(beneficiaries.map(b => 
       b.id === id ? { ...b, status: newStatus } : b
     ));
+    
+    if (admin && beneficiary) {
+      auditLogger.log(
+        'user_status_changed',
+        'Beneficiary',
+        `Changed status of ${beneficiary.fullName} to ${newStatus}`,
+        admin.id,
+        admin.fullName,
+        id,
+        { oldStatus: beneficiary.status, newStatus }
+      );
+    }
+    
     toast({
       title: 'Status Updated',
       description: `Beneficiary status changed to ${newStatus}`,
@@ -50,12 +82,125 @@ export default function Beneficiaries() {
   };
 
   const handleDelete = (id: string) => {
+    const beneficiary = beneficiaries.find(b => b.id === id);
     setBeneficiaries(beneficiaries.filter(b => b.id !== id));
+    
+    if (admin && beneficiary) {
+      auditLogger.log(
+        'user_deleted',
+        'Beneficiary',
+        `Deleted beneficiary ${beneficiary.fullName}`,
+        admin.id,
+        admin.fullName,
+        id
+      );
+    }
+    
     toast({
       title: 'Beneficiary Deleted',
       description: 'The beneficiary has been removed from the system',
       variant: 'destructive',
     });
+  };
+
+  const handleExportCSV = () => {
+    exportToCSV(
+      filteredBeneficiaries,
+      `beneficiaries_${new Date().toISOString().split('T')[0]}`,
+      [
+        { header: 'Name', key: 'fullName' },
+        { header: 'NIN', key: 'nin' },
+        { header: 'Phone', key: 'phone' },
+        { header: 'Email', key: 'email' },
+        { header: 'Balance', key: 'balance' },
+        { header: 'Status', key: 'status' },
+        { header: 'Registered Date', key: 'registeredDate' },
+      ]
+    );
+    
+    if (admin) {
+      auditLogger.log(
+        'export_data',
+        'Beneficiary',
+        `Exported ${filteredBeneficiaries.length} beneficiary records to CSV`,
+        admin.id,
+        admin.fullName
+      );
+    }
+  };
+
+  const handleExportPDF = () => {
+    exportToPDF(
+      filteredBeneficiaries.map(b => ({
+        ...b,
+        balance: formatCurrency(b.balance),
+        registeredDate: formatDate(b.registeredDate),
+      })),
+      `beneficiaries_${new Date().toISOString().split('T')[0]}`,
+      [
+        { header: 'Name', key: 'fullName', width: 40 },
+        { header: 'NIN', key: 'nin', width: 30 },
+        { header: 'Phone', key: 'phone', width: 30 },
+        { header: 'Balance', key: 'balance', width: 25 },
+        { header: 'Status', key: 'status', width: 20 },
+      ],
+      'Beneficiaries Report',
+      `Generated on ${new Date().toLocaleDateString()}`
+    );
+    
+    if (admin) {
+      auditLogger.log(
+        'export_data',
+        'Beneficiary',
+        `Exported ${filteredBeneficiaries.length} beneficiary records to PDF`,
+        admin.id,
+        admin.fullName
+      );
+    }
+  };
+
+  const handleBulkImport = (data: any[]) => {
+    const newBeneficiaries = data.map((item, index) => ({
+      id: `BEN${String(beneficiaries.length + index + 1).padStart(3, '0')}`,
+      fullName: item['Full Name'] || item.fullName,
+      nin: item.NIN || item.nin,
+      phone: item.Phone || item.phone,
+      email: item.Email || item.email,
+      status: (item.Status || item.status || 'active') as 'active' | 'inactive' | 'suspended',
+      balance: 0,
+      totalReceived: 0,
+      totalWithdrawn: 0,
+      registeredDate: new Date().toISOString().split('T')[0],
+      lastLogin: new Date().toISOString(),
+    }));
+    
+    setBeneficiaries([...beneficiaries, ...newBeneficiaries]);
+    
+    if (admin) {
+      auditLogger.log(
+        'bulk_import',
+        'Beneficiary',
+        `Bulk imported ${newBeneficiaries.length} beneficiaries`,
+        admin.id,
+        admin.fullName,
+        undefined,
+        { count: newBeneficiaries.length }
+      );
+    }
+  };
+
+  const handleBulkStatusUpdate = (status: string, count: number) => {
+    if (admin) {
+      auditLogger.log(
+        'bulk_status_update',
+        'Beneficiary',
+        `Bulk updated ${count} beneficiaries to ${status}`,
+        admin.id,
+        admin.fullName,
+        undefined,
+        { status, count }
+      );
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -85,7 +230,7 @@ export default function Beneficiaries() {
               <CardHeader>
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                   <CardTitle>Beneficiaries Management</CardTitle>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     <div className="relative">
                       <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Input
@@ -117,6 +262,27 @@ export default function Beneficiaries() {
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
+                    <AdvancedFilters 
+                      onFilterChange={setAdvancedFilters}
+                      filterConfig={[
+                        { label: 'Min Balance', key: 'balance_min', type: 'text' },
+                        { label: 'Max Balance', key: 'balance_max', type: 'text' },
+                        { label: 'Registered Date', key: 'registered', type: 'daterange' },
+                      ]}
+                    />
+                    <BulkOperations 
+                      type="beneficiaries"
+                      onImportComplete={handleBulkImport}
+                      onBulkStatusUpdate={handleBulkStatusUpdate}
+                    />
+                    <Button onClick={handleExportCSV} variant="outline" className="gap-2">
+                      <Download className="h-4 w-4" />
+                      CSV
+                    </Button>
+                    <Button onClick={handleExportPDF} variant="outline" className="gap-2">
+                      <Download className="h-4 w-4" />
+                      PDF
+                    </Button>
                   </div>
                 </div>
               </CardHeader>

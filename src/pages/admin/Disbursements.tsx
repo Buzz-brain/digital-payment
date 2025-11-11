@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Upload, FileText, Calendar, CheckCircle, Clock, XCircle } from 'lucide-react';
+import { Upload, FileText, Calendar, CheckCircle, Clock, XCircle, Download } from 'lucide-react';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { AdminNavbar } from '@/components/admin/AdminNavbar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { mockDisbursements } from '@/data/mockAdminData';
 import { toast } from '@/hooks/use-toast';
+import { exportToCSV, exportToPDF, formatCurrency, formatDate } from '@/lib/exportUtils';
 
 export default function Disbursements() {
   const [isUploading, setIsUploading] = useState(false);
@@ -64,6 +65,40 @@ export default function Disbursements() {
       default:
         return 'bg-muted';
     }
+  };
+
+  const handleExportCSV = () => {
+    exportToCSV(
+      mockDisbursements,
+      `disbursements_${new Date().toISOString().split('T')[0]}`,
+      [
+        { header: 'Batch Name', key: 'batchName' },
+        { header: 'Beneficiaries', key: 'beneficiaryCount' },
+        { header: 'Total Amount', key: 'totalAmount' },
+        { header: 'Date', key: 'date' },
+        { header: 'Status', key: 'status' },
+      ]
+    );
+  };
+
+  const handleExportPDF = () => {
+    exportToPDF(
+      mockDisbursements.map(d => ({
+        ...d,
+        totalAmount: formatCurrency(d.totalAmount),
+        date: formatDate(d.date),
+      })),
+      `disbursements_${new Date().toISOString().split('T')[0]}`,
+      [
+        { header: 'Batch Name', key: 'batchName', width: 60 },
+        { header: 'Beneficiaries', key: 'beneficiaryCount', width: 30 },
+        { header: 'Total Amount', key: 'totalAmount', width: 35 },
+        { header: 'Date', key: 'date', width: 30 },
+        { header: 'Status', key: 'status', width: 25 },
+      ],
+      'Disbursements Report',
+      `Generated on ${new Date().toLocaleDateString()}`
+    );
   };
 
   return (
@@ -140,7 +175,19 @@ export default function Disbursements() {
           >
             <Card>
               <CardHeader>
-                <CardTitle>Disbursement History</CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Disbursement History</CardTitle>
+                  <div className="flex gap-2">
+                    <Button onClick={handleExportCSV} variant="outline" className="gap-2">
+                      <Download className="h-4 w-4" />
+                      CSV
+                    </Button>
+                    <Button onClick={handleExportPDF} variant="outline" className="gap-2">
+                      <Download className="h-4 w-4" />
+                      PDF
+                    </Button>
+                  </div>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">

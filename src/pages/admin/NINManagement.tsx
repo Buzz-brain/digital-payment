@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Search, Filter, Edit, Trash2, UserCheck, MoreVertical } from 'lucide-react';
+import { Plus, Search, Filter, Edit, Trash2, UserCheck, MoreVertical, Download } from 'lucide-react';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { AdminNavbar } from '@/components/admin/AdminNavbar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,8 +14,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { mockNINRecords, NINRecord } from '@/data/mockAdminData';
 import { toast } from '@/hooks/use-toast';
+import { exportToCSV, exportToPDF, formatDate } from '@/lib/exportUtils';
+import { auditLogger } from '@/lib/auditLog';
+import { useAdminStore } from '@/store/adminStore';
+import { BulkOperations } from '@/components/admin/BulkOperations';
 
 export default function NINManagement() {
+  const { admin } = useAdminStore();
   const [records, setRecords] = useState(mockNINRecords);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -58,6 +63,18 @@ export default function NINManagement() {
           ? { ...r, ...formData }
           : r
       ));
+      
+      if (admin) {
+        auditLogger.log(
+          'nin_updated',
+          'NIN',
+          `Updated NIN record for ${formData.fullName}`,
+          admin.id,
+          admin.fullName,
+          editingRecord.id
+        );
+      }
+      
       toast({
         title: 'NIN Updated',
         description: 'NIN record has been updated successfully',
@@ -71,6 +88,18 @@ export default function NINManagement() {
         status: 'active',
       };
       setRecords([newRecord, ...records]);
+      
+      if (admin) {
+        auditLogger.log(
+          'nin_created',
+          'NIN',
+          `Created new NIN record for ${formData.fullName}`,
+          admin.id,
+          admin.fullName,
+          newRecord.id
+        );
+      }
+      
       toast({
         title: 'NIN Registered',
         description: 'New NIN has been registered successfully',
@@ -113,7 +142,20 @@ export default function NINManagement() {
   };
 
   const handleDelete = (id: string) => {
+    const record = records.find(r => r.id === id);
     setRecords(records.filter(r => r.id !== id));
+    
+    if (admin && record) {
+      auditLogger.log(
+        'nin_deleted',
+        'NIN',
+        `Deleted NIN record for ${record.fullName}`,
+        admin.id,
+        admin.fullName,
+        id
+      );
+    }
+    
     toast({
       title: 'NIN Deleted',
       description: 'NIN record has been removed',
@@ -130,6 +172,61 @@ export default function NINManagement() {
       title: 'Status Updated',
       description: 'NIN status has been changed',
     });
+  };
+
+  const handleExportCSV = () => {
+    exportToCSV(
+      filteredRecords,
+      `nin_records_${new Date().toISOString().split('T')[0]}`,
+      [
+        { header: 'NIN', key: 'nin' },
+        { header: 'Full Name', key: 'fullName' },
+        { header: 'Phone', key: 'phone' },
+        { header: 'Email', key: 'email' },
+        { header: 'State', key: 'state' },
+        { header: 'LGA', key: 'lga' },
+        { header: 'Status', key: 'status' },
+      ]
+    );
+  };
+
+  const handleExportPDF = () => {
+    exportToPDF(
+      filteredRecords.map(r => ({
+        ...r,
+        registeredDate: formatDate(r.registeredDate),
+      })),
+      `nin_records_${new Date().toISOString().split('T')[0]}`,
+      [
+        { header: 'NIN', key: 'nin', width: 30 },
+        { header: 'Full Name', key: 'fullName', width: 40 },
+        { header: 'Phone', key: 'phone', width: 30 },
+        { header: 'State', key: 'state', width: 25 },
+        { header: 'Status', key: 'status', width: 20 },
+      ],
+      'NIN Records Report',
+      `Generated on ${new Date().toLocaleDateString()}`
+    );
+  };
+
+  const handleBulkImport = (data: any[]) => {
+    const newRecords = data.map((item, index) => ({
+      id: `NIN${String(records.length + index + 1).padStart(3, '0')}`,
+      nin: item.NIN || item.nin,
+      fullName: item['Full Name'] || item.fullName,
+      dateOfBirth: item['Date of Birth'] || item.dateOfBirth || '',
+      gender: (item.Gender || item.gender || 'male') as 'male' | 'female',
+      phone: item.Phone || item.phone,
+      email: item.Email || item.email || '',
+      address: item.Address || item.address || '',
+      state: item.State || item.state,
+      lga: item.LGA || item.lga,
+      registeredDate: new Date().toISOString().split('T')[0],
+      isLinked: false,
+      status: 'active' as 'active' | 'suspended',
+    }));
+    
+    setRecords([...records, ...newRecords]);
   };
 
   const getStatusColor = (status: string) => {
@@ -159,7 +256,7 @@ export default function NINManagement() {
               <CardHeader>
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                   <CardTitle>NIN Management</CardTitle>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     <div className="relative">
                       <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Input
@@ -191,6 +288,18 @@ export default function NINManagement() {
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
+                    <BulkOperations 
+                      type="nin"
+                      onImportComplete={handleBulkImport}
+                    />
+                    <Button onClick={handleExportCSV} variant="outline" className="gap-2">
+                      <Download className="h-4 w-4" />
+                      CSV
+                    </Button>
+                    <Button onClick={handleExportPDF} variant="outline" className="gap-2">
+                      <Download className="h-4 w-4" />
+                      PDF
+                    </Button>
                     <Dialog open={isCreateOpen} onOpenChange={(open) => {
                       setIsCreateOpen(open);
                       if (!open) resetForm();
