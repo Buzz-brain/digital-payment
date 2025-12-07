@@ -22,9 +22,12 @@ import { auditLogger } from '@/lib/auditLog';
 import { useAdminStore } from '@/store/adminStore';
 import { BulkOperations } from '@/components/admin/BulkOperations';
 import { AdvancedFilters } from '@/components/admin/AdvancedFilters';
+import { PermissionGate } from '@/components/admin/PermissionGate';
+import { usePermissions } from '@/hooks/usePermissions';
 
 export default function Beneficiaries() {
   const { admin } = useAdminStore();
+  const { can } = usePermissions();
   const [beneficiaries, setBeneficiaries] = useState(mockBeneficiaries);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -270,19 +273,23 @@ export default function Beneficiaries() {
                         { label: 'Registered Date', key: 'registered', type: 'daterange' },
                       ]}
                     />
-                    <BulkOperations 
-                      type="beneficiaries"
-                      onImportComplete={handleBulkImport}
-                      onBulkStatusUpdate={handleBulkStatusUpdate}
-                    />
-                    <Button onClick={handleExportCSV} variant="outline" className="gap-2">
-                      <Download className="h-4 w-4" />
-                      CSV
-                    </Button>
-                    <Button onClick={handleExportPDF} variant="outline" className="gap-2">
-                      <Download className="h-4 w-4" />
-                      PDF
-                    </Button>
+                    <PermissionGate resource="beneficiaries" action="bulkOperations">
+                      <BulkOperations 
+                        type="beneficiaries"
+                        onImportComplete={handleBulkImport}
+                        onBulkStatusUpdate={handleBulkStatusUpdate}
+                      />
+                    </PermissionGate>
+                    <PermissionGate resource="beneficiaries" action="export">
+                      <Button onClick={handleExportCSV} variant="outline" className="gap-2">
+                        <Download className="h-4 w-4" />
+                        CSV
+                      </Button>
+                      <Button onClick={handleExportPDF} variant="outline" className="gap-2">
+                        <Download className="h-4 w-4" />
+                        PDF
+                      </Button>
+                    </PermissionGate>
                   </div>
                 </div>
               </CardHeader>
@@ -332,31 +339,33 @@ export default function Beneficiaries() {
                                   <Eye className="w-4 h-4 mr-2" />
                                   View Details
                                 </DropdownMenuItem>
-                                {beneficiary.status !== 'active' && (
+                                {can('beneficiaries', 'update') && beneficiary.status !== 'active' && (
                                   <DropdownMenuItem onClick={() => handleStatusChange(beneficiary.id, 'active')}>
                                     <UserCheck className="w-4 h-4 mr-2" />
                                     Activate
                                   </DropdownMenuItem>
                                 )}
-                                {beneficiary.status !== 'inactive' && (
+                                {can('beneficiaries', 'update') && beneficiary.status !== 'inactive' && (
                                   <DropdownMenuItem onClick={() => handleStatusChange(beneficiary.id, 'inactive')}>
                                     <UserX className="w-4 h-4 mr-2" />
                                     Deactivate
                                   </DropdownMenuItem>
                                 )}
-                                {beneficiary.status !== 'suspended' && (
+                                {can('beneficiaries', 'update') && beneficiary.status !== 'suspended' && (
                                   <DropdownMenuItem onClick={() => handleStatusChange(beneficiary.id, 'suspended')}>
                                     <Ban className="w-4 h-4 mr-2" />
                                     Suspend
                                   </DropdownMenuItem>
                                 )}
-                                <DropdownMenuItem 
-                                  className="text-destructive"
-                                  onClick={() => handleDelete(beneficiary.id)}
-                                >
-                                  <Trash2 className="w-4 h-4 mr-2" />
-                                  Delete
-                                </DropdownMenuItem>
+                                {can('beneficiaries', 'delete') && (
+                                  <DropdownMenuItem 
+                                    className="text-destructive"
+                                    onClick={() => handleDelete(beneficiary.id)}
+                                  >
+                                    <Trash2 className="w-4 h-4 mr-2" />
+                                    Delete
+                                  </DropdownMenuItem>
+                                )}
                               </DropdownMenuContent>
                             </DropdownMenu>
                           </TableCell>

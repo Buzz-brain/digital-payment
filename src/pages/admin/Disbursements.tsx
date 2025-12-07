@@ -12,8 +12,11 @@ import { Progress } from '@/components/ui/progress';
 import { mockDisbursements } from '@/data/mockAdminData';
 import { toast } from '@/hooks/use-toast';
 import { exportToCSV, exportToPDF, formatCurrency, formatDate } from '@/lib/exportUtils';
+import { PermissionGate } from '@/components/admin/PermissionGate';
+import { usePermissions } from '@/hooks/usePermissions';
 
 export default function Disbursements() {
+  const { can } = usePermissions();
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
 

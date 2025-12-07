@@ -106,9 +106,12 @@ export default function AdminLogin() {
                 {isLoading ? 'Signing in...' : 'Sign In'}
               </Button>
 
-              <p className="text-xs text-center text-muted-foreground mt-4">
-                Demo: admin@dpi.gov / admin123
-              </p>
+              <div className="text-xs text-center text-muted-foreground mt-4 space-y-1">
+                <p className="font-medium">Demo Accounts:</p>
+                <p>Super Admin: admin@dpi.gov / admin123</p>
+                <p>Moderator: moderator@dpi.gov / mod123</p>
+                <p>Viewer: viewer@dpi.gov / view123</p>
+              </div>
             </form>
           </CardContent>
         </Card>

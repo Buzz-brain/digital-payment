@@ -14,8 +14,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { mockPolls, Poll } from '@/data/mockAdminData';
 import { toast } from '@/hooks/use-toast';
 import { exportToCSV, exportToPDF } from '@/lib/exportUtils';
+import { PermissionGate } from '@/components/admin/PermissionGate';
+import { usePermissions } from '@/hooks/usePermissions';
 
 export default function PollsManagement() {
+  const { can } = usePermissions();
   const [polls, setPolls] = useState(mockPolls);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [newPoll, setNewPoll] = useState({
@@ -148,18 +151,21 @@ export default function PollsManagement() {
                 </p>
               </div>
               <div className="flex gap-2">
-                <Button onClick={handleExportCSV} variant="outline" className="gap-2">
-                  <Download className="h-4 w-4" />
-                  Export CSV
-                </Button>
-                <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-                  <DialogTrigger asChild>
-                    <Button>
-                      <Plus className="w-4 h-4 mr-2" />
-                      Create Poll
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-2xl">
+                <PermissionGate resource="polls" action="export">
+                  <Button onClick={handleExportCSV} variant="outline" className="gap-2">
+                    <Download className="h-4 w-4" />
+                    Export CSV
+                  </Button>
+                </PermissionGate>
+                <PermissionGate resource="polls" action="create">
+                  <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+                    <DialogTrigger asChild>
+                      <Button>
+                        <Plus className="w-4 h-4 mr-2" />
+                        Create Poll
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-2xl">
                     <DialogHeader>
                       <DialogTitle>Create New Poll</DialogTitle>
                     </DialogHeader>
@@ -242,9 +248,11 @@ export default function PollsManagement() {
                     </div>
                   </DialogContent>
                 </Dialog>
+              </PermissionGate>
               </div>
             </div>
 
+            <div className="grid gap-6">
               {polls.map((poll) => (
                 <Card key={poll.id}>
                   <CardHeader>
@@ -262,23 +270,27 @@ export default function PollsManagement() {
                         </p>
                       </div>
                       <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => handleToggleStatus(poll.id)}
-                        >
-                          <Clock className="w-4 h-4" />
-                        </Button>
+                        {can('polls', 'update') && (
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => handleToggleStatus(poll.id)}
+                          >
+                            <Clock className="w-4 h-4" />
+                          </Button>
+                        )}
                         <Button variant="outline" size="icon">
                           <Eye className="w-4 h-4" />
                         </Button>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => handleDeletePoll(poll.id)}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+                        {can('polls', 'delete') && (
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => handleDeletePoll(poll.id)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        )}
                       </div>
                     </div>
                   </CardHeader>
