@@ -18,9 +18,12 @@ import { exportToCSV, exportToPDF, formatDate } from '@/lib/exportUtils';
 import { auditLogger } from '@/lib/auditLog';
 import { useAdminStore } from '@/store/adminStore';
 import { BulkOperations } from '@/components/admin/BulkOperations';
+import { PermissionGate } from '@/components/admin/PermissionGate';
+import { usePermissions } from '@/hooks/usePermissions';
 
 export default function NINManagement() {
   const { admin } = useAdminStore();
+  const { can } = usePermissions();
   const [records, setRecords] = useState(mockNINRecords);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -288,28 +291,33 @@ export default function NINManagement() {
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
-                    <BulkOperations 
-                      type="nin"
-                      onImportComplete={handleBulkImport}
-                    />
-                    <Button onClick={handleExportCSV} variant="outline" className="gap-2">
-                      <Download className="h-4 w-4" />
-                      CSV
-                    </Button>
-                    <Button onClick={handleExportPDF} variant="outline" className="gap-2">
-                      <Download className="h-4 w-4" />
-                      PDF
-                    </Button>
-                    <Dialog open={isCreateOpen} onOpenChange={(open) => {
-                      setIsCreateOpen(open);
-                      if (!open) resetForm();
-                    }}>
-                      <DialogTrigger asChild>
-                        <Button>
-                          <Plus className="w-4 h-4 mr-2" />
-                          Register NIN
-                        </Button>
-                      </DialogTrigger>
+                    <PermissionGate resource="nin" action="bulkOperations">
+                      <BulkOperations 
+                        type="nin"
+                        onImportComplete={handleBulkImport}
+                      />
+                    </PermissionGate>
+                    <PermissionGate resource="nin" action="export">
+                      <Button onClick={handleExportCSV} variant="outline" className="gap-2">
+                        <Download className="h-4 w-4" />
+                        CSV
+                      </Button>
+                      <Button onClick={handleExportPDF} variant="outline" className="gap-2">
+                        <Download className="h-4 w-4" />
+                        PDF
+                      </Button>
+                    </PermissionGate>
+                    <PermissionGate resource="nin" action="create">
+                      <Dialog open={isCreateOpen} onOpenChange={(open) => {
+                        setIsCreateOpen(open);
+                        if (!open) resetForm();
+                      }}>
+                        <DialogTrigger asChild>
+                          <Button>
+                            <Plus className="w-4 h-4 mr-2" />
+                            Register NIN
+                          </Button>
+                        </DialogTrigger>
                       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                         <DialogHeader>
                           <DialogTitle>
@@ -412,6 +420,7 @@ export default function NINManagement() {
                         </Button>
                       </DialogContent>
                     </Dialog>
+                    </PermissionGate>
                   </div>
                 </div>
               </CardHeader>
@@ -469,21 +478,27 @@ export default function NINManagement() {
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => handleEdit(record)}>
-                                  <Edit className="w-4 h-4 mr-2" />
-                                  Edit
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleToggleStatus(record.id)}>
-                                  <UserCheck className="w-4 h-4 mr-2" />
-                                  {record.status === 'active' ? 'Suspend' : 'Activate'}
-                                </DropdownMenuItem>
-                                <DropdownMenuItem 
-                                  className="text-destructive"
-                                  onClick={() => handleDelete(record.id)}
-                                >
-                                  <Trash2 className="w-4 h-4 mr-2" />
-                                  Delete
-                                </DropdownMenuItem>
+                                {can('nin', 'update') && (
+                                  <DropdownMenuItem onClick={() => handleEdit(record)}>
+                                    <Edit className="w-4 h-4 mr-2" />
+                                    Edit
+                                  </DropdownMenuItem>
+                                )}
+                                {can('nin', 'update') && (
+                                  <DropdownMenuItem onClick={() => handleToggleStatus(record.id)}>
+                                    <UserCheck className="w-4 h-4 mr-2" />
+                                    {record.status === 'active' ? 'Suspend' : 'Activate'}
+                                  </DropdownMenuItem>
+                                )}
+                                {can('nin', 'delete') && (
+                                  <DropdownMenuItem 
+                                    className="text-destructive"
+                                    onClick={() => handleDelete(record.id)}
+                                  >
+                                    <Trash2 className="w-4 h-4 mr-2" />
+                                    Delete
+                                  </DropdownMenuItem>
+                                )}
                               </DropdownMenuContent>
                             </DropdownMenu>
                           </TableCell>
