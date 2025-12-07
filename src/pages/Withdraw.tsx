@@ -9,6 +9,14 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
+import { apiPost } from '@/lib/api';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 
 const Withdraw = () => {
   const { t } = useTranslation();
@@ -19,18 +27,48 @@ const Withdraw = () => {
     method: "",
     accountNumber: "",
     bankName: "",
+    description: "",
   });
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [pendingPayload, setPendingPayload] = useState<any>(null);
+
+  const LARGE_WITHDRAW_THRESHOLD = 100000; // ₦100,000
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
-    // Simulate API call
-    setTimeout(() => {
+    const amountNum = Number(formData.amount);
+    if (!amountNum || amountNum <= 0) {
       setLoading(false);
-      toast.success(`Successfully requested withdrawal of ₦${formData.amount}`);
-      navigate("/dashboard");
-    }, 2000);
+      toast.error('Enter a valid amount');
+      return;
+    }
+
+    const payload: any = { amount: amountNum, note: formData.description };
+
+    if (amountNum >= LARGE_WITHDRAW_THRESHOLD) {
+      setPendingPayload(payload);
+      setConfirmOpen(true);
+      setLoading(false);
+      return;
+    }
+
+    await doWithdraw(payload);
+  };
+
+  const doWithdraw = async (payload: any) => {
+    setLoading(true);
+    try {
+      const res: any = await apiPost('/api/transactions/withdraw', payload);
+      setLoading(false);
+      setConfirmOpen(false);
+      setPendingPayload(null);
+      toast.success(res?.message || `Successfully requested withdrawal of ₦${payload.amount}`);
+      navigate('/dashboard');
+    } catch (err: any) {
+      setLoading(false);
+      toast.error(err?.message || 'Withdrawal failed');
+    }
   };
 
   return (
@@ -125,6 +163,16 @@ const Withdraw = () => {
                   </motion.div>
                 )}
 
+                <div className="space-y-2">
+                  <Label htmlFor="description">Description (optional)</Label>
+                  <Input
+                    id="description"
+                    placeholder="Enter description (optional)"
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  />
+                </div>
+
                 <Button
                   type="submit"
                   className="w-full"
@@ -135,6 +183,20 @@ const Withdraw = () => {
               </form>
             </CardContent>
           </Card>
+            <Dialog open={confirmOpen} onOpenChange={(open) => setConfirmOpen(open)}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Confirm Withdrawal</DialogTitle>
+                </DialogHeader>
+                <div className="mt-2">
+                  <p className="mb-4">You are about to withdraw <strong>₦{pendingPayload?.amount}</strong>. This action may take some time to process. Do you want to continue?</p>
+                  <div className="flex gap-2 justify-end">
+                    <Button variant="ghost" onClick={() => { setConfirmOpen(false); setPendingPayload(null); }}>Cancel</Button>
+                    <Button onClick={async () => { if (pendingPayload) await doWithdraw(pendingPayload); }} disabled={!pendingPayload || loading}>{loading ? t('processing') : 'Confirm'}</Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
         </motion.div>
       </div>
     </div>

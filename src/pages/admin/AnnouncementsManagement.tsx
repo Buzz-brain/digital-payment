@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, Edit, Trash2, Megaphone } from 'lucide-react';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
@@ -9,7 +9,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { mockAnnouncements } from '@/data/mockData';
+import type { Announcement as AnnouncementType } from '@/data/mockData';
+import { apiGet, apiPost, apiPut, apiDelete } from '@/lib/api';
 import {
   Dialog,
   DialogContent,
@@ -28,14 +29,118 @@ import { toast } from '@/hooks/use-toast';
 
 export default function AnnouncementsManagement() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
+  const [category, setCategory] = useState('general');
+  const [priority, setPriority] = useState('low');
+  const [announcements, setAnnouncements] = useState<AnnouncementType[]>([]);
+
+  // Helper: map backend announcement to local shape
+  const mapAnnouncement = (a: any): AnnouncementType => ({
+    id: a._id || a.id,
+    title: a.title,
+    content: a.content || a.body || '',
+    category: a.category || 'general',
+    priority: a.priority || 'low',
+    date: a.createdAt || new Date().toISOString(),
+    publishedAt: a.publishedAt || null,
+    createdBy: a.createdBy,
+    published: !!a.published,
+  });
+
+  // Helper: load announcements (admin) and set state
+  const loadAnnouncements = async () => {
+    try {
+      const data = await apiGet('/api/announcements/all');
+      setAnnouncements(((data || []) as any[]).map(mapAnnouncement));
+    } catch (err) {
+      console.warn('Failed to load announcements for admin view', err);
+    }
+  };
+  // Load announcements for admin view — admin endpoint returns all announcements
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      if (!mounted) return;
+      await loadAnnouncements();
+    })();
+    return () => { mounted = false; };
+  }, []);
 
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
-    toast({
-      title: 'Announcement Created',
-      description: 'The announcement has been published successfully',
-    });
-    setIsOpen(false);
+    (async () => {
+      try {
+        // Close UI immediately for snappier response
+        setIsOpen(false);
+        setTitle(''); setContent(''); setCategory('general'); setPriority('low');
+        await apiPost('/api/announcements', { title, content, category, priority, published: true });
+        toast({ title: 'Announcement Created', description: 'The announcement has been published successfully' });
+        // reload authoritative list
+        await loadAnnouncements();
+      } catch (err: any) {
+        toast({ title: 'Error', description: err?.message || 'Failed to create announcement' });
+      }
+    })();
+  };
+
+  const handleUpdate = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingId) return;
+    (async () => {
+      try {
+        await apiPut(`/api/announcements/${editingId}`, { title, content, category, priority, published: true });
+        toast({ title: 'Announcement Updated', description: 'The announcement was updated successfully' });
+        setIsOpen(false);
+        setIsEditing(false);
+        setEditingId(null);
+        setTitle(''); setContent(''); setCategory('general'); setPriority('low');
+        // reload list
+        const updated = await apiGet('/api/announcements/all');
+        setAnnouncements((updated || []).map((a: any) => ({ id: a._id || a.id, title: a.title, content: a.content || a.body || '', category: a.category || 'general', priority: a.priority || 'low', date: a.createdAt || new Date().toISOString(), publishedAt: a.publishedAt || null, createdBy: a.createdBy, published: !!a.published })));
+      } catch (err: any) {
+        toast({ title: 'Error', description: err?.message || 'Failed to update announcement' });
+      }
+    })();
+  };
+
+  const handleDelete = (id: string) => {
+    // optimistic update: remove from UI immediately, rollback on error
+    const previous = announcements;
+    setAnnouncements((prev) => prev.filter((a) => a.id !== id));
+    (async () => {
+      try {
+        await apiDelete(`/api/announcements/${id}`);
+        toast({ title: 'Announcement Deleted', description: 'The announcement has been deleted' });
+        // reload authoritative list to ensure consistency
+        await loadAnnouncements();
+      } catch (err: any) {
+        toast({ title: 'Error', description: err?.message || 'Failed to delete announcement' });
+        // rollback
+        setAnnouncements(previous);
+      }
+    })();
+  };
+
+  const togglePublish = (id: string, current: boolean) => {
+    // optimistic toggle: update UI first
+    const previous = announcements;
+    setAnnouncements((prev) => prev.map((a) => a.id === id ? { ...a, published: !current, publishedAt: !current ? new Date().toISOString() : null } : a));
+    (async () => {
+      try {
+        await apiPut(`/api/announcements/${id}`, { published: !current });
+        toast({ title: current ? 'Announcement Unpublished' : 'Announcement Published' });
+        // reload authoritative list
+        await loadAnnouncements();
+      } catch (err: any) {
+        toast({ title: 'Error', description: err?.message || 'Failed to change publish state' });
+        // rollback
+        setAnnouncements(previous);
+      }
+    })();
   };
 
   const getPriorityColor = (priority: string) => {
@@ -72,19 +177,21 @@ export default function AnnouncementsManagement() {
                         New Announcement
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="max-w-2xl">
+                      <DialogContent className="max-w-2xl">
                       <DialogHeader>
-                        <DialogTitle>Create New Announcement</DialogTitle>
+                        <DialogTitle>{isEditing ? 'Edit Announcement' : 'Create New Announcement'}</DialogTitle>
                       </DialogHeader>
-                      <form onSubmit={handleCreate} className="space-y-4">
+                      <form onSubmit={isEditing ? handleUpdate : handleCreate} className="space-y-4">
                         <div className="space-y-2">
                           <Label htmlFor="title">Title</Label>
-                          <Input id="title" placeholder="Announcement title" required />
+                          <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Announcement title" required />
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="content">Content</Label>
                           <Textarea
                             id="content"
+                            value={content}
+                            onChange={(e) => setContent(e.target.value)}
                             placeholder="Announcement content"
                             rows={5}
                             required
@@ -93,7 +200,7 @@ export default function AnnouncementsManagement() {
                         <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-2">
                             <Label htmlFor="category">Category</Label>
-                            <Select>
+                            <Select value={category as any} onValueChange={(v) => setCategory(v)}>
                               <SelectTrigger>
                                 <SelectValue placeholder="Select category" />
                               </SelectTrigger>
@@ -107,7 +214,7 @@ export default function AnnouncementsManagement() {
                           </div>
                           <div className="space-y-2">
                             <Label htmlFor="priority">Priority</Label>
-                            <Select>
+                            <Select value={priority as any} onValueChange={(v) => setPriority(v)}>
                               <SelectTrigger>
                                 <SelectValue placeholder="Select priority" />
                               </SelectTrigger>
@@ -123,7 +230,7 @@ export default function AnnouncementsManagement() {
                           <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>
                             Cancel
                           </Button>
-                          <Button type="submit">Publish</Button>
+                          <Button type="submit">{isEditing ? 'Update' : 'Publish'}</Button>
                         </div>
                       </form>
                     </DialogContent>
@@ -132,7 +239,7 @@ export default function AnnouncementsManagement() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {mockAnnouncements.map((announcement) => (
+                  {announcements.map((announcement) => (
                     <div
                       key={announcement.id}
                       className="flex items-start justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
@@ -144,24 +251,41 @@ export default function AnnouncementsManagement() {
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
                             <h4 className="font-medium">{announcement.title}</h4>
-                            <Badge className={getPriorityColor(announcement.priority)}>
-                              {announcement.priority}
-                            </Badge>
+                              <Badge className={getPriorityColor(announcement.priority)}>
+                                {announcement.priority}
+                              </Badge>
+                              <Badge className={announcement.published ? 'bg-green-100 text-green-800 ml-2' : 'bg-muted text-muted-foreground ml-2'}>
+                                {announcement.published ? 'Published' : 'Draft'}
+                              </Badge>
                           </div>
                           <p className="text-sm text-muted-foreground line-clamp-2">
                             {announcement.content}
                           </p>
-                          <p className="text-xs text-muted-foreground mt-2">
-                            {new Date(announcement.date).toLocaleDateString()} •{' '}
-                            {announcement.category}
-                          </p>
+                            <p className="text-xs text-muted-foreground mt-2">
+                              {new Date(announcement.date).toLocaleDateString()} • {announcement.category}
+                            </p>
+                            {announcement.publishedAt && (
+                              <p className="text-xs text-muted-foreground mt-1">Published at: {new Date(announcement.publishedAt).toLocaleString()}</p>
+                            )}
                         </div>
                       </div>
                       <div className="flex gap-2">
-                        <Button variant="ghost" size="icon">
+                        <Button variant="ghost" size="icon" onClick={() => {
+                          // open edit dialog and populate
+                          setIsEditing(true);
+                          setEditingId(announcement.id);
+                          setTitle(announcement.title);
+                          setContent(announcement.content);
+                          setCategory(announcement.category);
+                          setPriority(announcement.priority);
+                          setIsOpen(true);
+                        }}>
                           <Edit className="w-4 h-4" />
                         </Button>
-                        <Button variant="ghost" size="icon">
+                        <Button variant="ghost" size="sm" onClick={() => togglePublish(announcement.id, announcement.published)}>
+                          {announcement.published ? 'Unpublish' : 'Publish'}
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => handleDelete(announcement.id)}>
                           <Trash2 className="w-4 h-4 text-destructive" />
                         </Button>
                       </div>

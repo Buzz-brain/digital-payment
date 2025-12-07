@@ -22,7 +22,7 @@ const Login = () => {
   const [rememberMe, setRememberMe] = useState(false);
   
   const [formData, setFormData] = useState({
-    nin: '',
+    identifier: '',
     password: '',
   });
 
@@ -36,33 +36,27 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (formData.nin.length !== 11) {
-      toast({
-        title: 'Invalid NIN',
-        description: 'NIN must be 11 digits',
-        variant: 'destructive',
-      });
+    // allow either NIN (11 digits) or username
+    if (!formData.identifier || formData.identifier.trim().length === 0) {
+      toast({ title: 'Missing identifier', description: 'Enter your NIN or username', variant: 'destructive' });
       return;
     }
 
     setLoading(true);
-    
-    const success = await login(formData.nin, formData.password);
+    try {
+      const success = await login(formData.identifier, formData.password);
+      setLoading(false);
 
-    setLoading(false);
-
-    if (success) {
-      toast({
-        title: 'Welcome Back!',
-        description: 'Login successful',
-      });
-      navigate('/dashboard');
-    } else {
-      toast({
-        title: 'Login Failed',
-        description: 'Invalid NIN or password',
-        variant: 'destructive',
-      });
+      if (success) {
+        toast({ title: 'Welcome Back!', description: 'Login successful' });
+        navigate('/dashboard');
+      } else {
+        toast({ title: 'Login Failed', description: 'Invalid credentials', variant: 'destructive' });
+      }
+    } catch (err: any) {
+      setLoading(false);
+      const message = err?.message || 'Server error';
+      toast({ title: 'Login Failed', description: message, variant: 'destructive' });
     }
   };
 
@@ -92,17 +86,16 @@ const Login = () => {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="nin">{t('nin')}</Label>
+                <Label htmlFor="identifier">NIN or Username</Label>
                 <Input
-                  id="nin"
-                  name="nin"
-                  placeholder="12345678901"
-                  maxLength={11}
-                  value={formData.nin}
+                  id="identifier"
+                  name="identifier"
+                  placeholder="12345678901 or username"
+                  value={formData.identifier}
                   onChange={handleInputChange}
                   required
                 />
-                <p className="text-xs text-muted-foreground">11-digit National Identity Number</p>
+                <p className="text-xs text-muted-foreground">Enter your 11-digit NIN or your username</p>
               </div>
 
               <div className="space-y-2">

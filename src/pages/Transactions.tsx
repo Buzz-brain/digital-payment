@@ -12,7 +12,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { mockTransactions } from '@/data/mockData';
+import { apiGet } from '@/lib/api';
+import { useQuery } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 
 const Transactions = () => {
@@ -21,11 +23,22 @@ const Transactions = () => {
   const [filterType, setFilterType] = useState<'all' | 'credit' | 'debit'>('all');
   const [filterStatus, setFilterStatus] = useState<'all' | 'completed' | 'pending' | 'failed'>('all');
 
-  const filteredTransactions = mockTransactions.filter((transaction) => {
-    const matchesSearch = transaction.description
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase()) ||
-      transaction.reference.toLowerCase().includes(searchQuery.toLowerCase());
+  const queryClient = useQueryClient();
+
+  const { data: transactions = [], isLoading, isError } = useQuery({
+    queryKey: ['transactions'],
+    queryFn: async () => {
+      const res: any = await apiGet('/api/transactions');
+      return res.transactions || res;
+    },
+    // stale time short so UI stays relatively fresh; adjust as needed
+    staleTime: 1000 * 10,
+  });
+
+  const filteredTransactions = (transactions || []).filter((transaction) => {
+    const desc = (transaction.description || '') as string;
+    const ref = (transaction.reference || transaction._id || '') as string;
+    const matchesSearch = desc.toLowerCase().includes(searchQuery.toLowerCase()) || ref.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesType = filterType === 'all' || transaction.type === filterType;
     const matchesStatus = filterStatus === 'all' || transaction.status === filterStatus;
     return matchesSearch && matchesType && matchesStatus;
@@ -48,13 +61,13 @@ const Transactions = () => {
     });
   };
 
-  const totalCredit = mockTransactions
+  const totalCredit = transactions
     .filter((t) => t.type === 'credit')
-    .reduce((sum, t) => sum + t.amount, 0);
+    .reduce((sum, t) => sum + (t.amount || 0), 0);
 
-  const totalDebit = mockTransactions
+  const totalDebit = transactions
     .filter((t) => t.type === 'debit')
-    .reduce((sum, t) => sum + t.amount, 0);
+    .reduce((sum, t) => sum + (t.amount || 0), 0);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/5">
@@ -186,7 +199,9 @@ const Transactions = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {filteredTransactions.length === 0 ? (
+                {isLoading ? (
+                  <div className="text-center py-12 text-muted-foreground">Loading transactions...</div>
+                ) : filteredTransactions.length === 0 ? (
                   <div className="text-center py-12 text-muted-foreground">
                     No transactions found matching your criteria
                   </div>

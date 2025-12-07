@@ -14,15 +14,28 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuthStore } from '@/store/authStore';
+import { useEffect } from 'react';
 import { mockTransactions } from '@/data/mockData';
 import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';
 
 const Dashboard = () => {
-  const { user } = useAuthStore();
+  const user = useAuthStore((s) => s.user);
+  const wallet = useAuthStore((s) => s.wallet);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const { t } = useTranslation();
 
-  const recentTransactions = mockTransactions.slice(0, 5);
+  // Prefer real ledger from wallet if available, otherwise use mock data
+  const recentTransactions = (wallet && wallet.ledger && wallet.ledger.length > 0)
+    ? wallet.ledger.slice(-5).reverse().map((entry: any, idx: number) => ({
+        id: `w-${idx}`,
+        description: entry.type || 'Transaction',
+        date: entry.createdAt || entry.date || new Date().toISOString(),
+        amount: entry.amount || 0,
+        type: entry.type === 'credit' ? 'credit' : 'debit',
+        status: 'completed',
+      }))
+    : mockTransactions.slice(0, 5);
 
   const quickActions = [
     {
@@ -105,7 +118,7 @@ const Dashboard = () => {
           <motion.div variants={itemVariants} className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold">
-                Welcome back, {user?.fullName.split(' ')[0]}! 👋
+                Welcome back, {user?.username ?? user?.fullName?.split(' ')[0] ?? ''}! 👋
               </h1>
               <p className="text-muted-foreground">Here's your financial overview</p>
             </div>
@@ -142,7 +155,7 @@ const Dashboard = () => {
                   </div>
                 </div>
                 <div className="text-xs opacity-75">
-                  NIN: {user?.nin} • Verified ✓
+                  NIN: {user?.nin} • Email: {user?.email || '—'}
                 </div>
               </CardContent>
             </Card>

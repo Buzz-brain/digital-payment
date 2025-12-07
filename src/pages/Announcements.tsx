@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { Megaphone, X, Calendar, AlertCircle } from "lucide-react";
@@ -6,12 +6,40 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { mockAnnouncements } from "@/data/mockData";
+import type { Announcement as AnnouncementType } from "@/data/mockData";
+import { apiGet } from "@/lib/api";
 import { format } from "date-fns";
 
 const Announcements = () => {
   const { t } = useTranslation();
-  const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
+  const [selectedAnnouncement, setSelectedAnnouncement] = useState<AnnouncementType | null>(null);
+  const [announcements, setAnnouncements] = useState<AnnouncementType[]>([]);
+
+  useEffect(() => {
+    let mounted = true;
+    async function load() {
+      try {
+        const data = await apiGet('/api/announcements');
+        if (!mounted) return;
+        const mapped = (data || []).map((a: any) => ({
+          id: a._id || a.id,
+          title: a.title,
+          content: a.content || a.body || '',
+          category: a.category || 'general',
+          priority: a.priority || 'low',
+          publishedAt: a.publishedAt || a.createdAt || new Date().toISOString(),
+          createdBy: a.createdBy,
+          published: !!a.published,
+        }));
+        setAnnouncements(mapped);
+      } catch (err) {
+        // fallback to mock data (already set)
+        console.warn('Failed to load announcements, using mock data', err);
+      }
+    }
+    load();
+    return () => { mounted = false; };
+  }, []);
 
   const getPriorityColor = (priority: string): "default" | "destructive" | "secondary" => {
     switch (priority) {
@@ -58,7 +86,7 @@ const Announcements = () => {
           </div>
 
           <div className="space-y-4">
-            {mockAnnouncements.map((announcement, index) => (
+            {announcements.map((announcement, index) => (
               <motion.div
                 key={announcement.id}
                 initial={{ opacity: 0, x: -20 }}
@@ -72,16 +100,25 @@ const Announcements = () => {
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
-                        <span className="text-3xl">{getCategoryIcon(announcement.category)}</span>
+                        <span className="text-3xl">
+                          {getCategoryIcon(announcement.category)}
+                        </span>
                         <div>
-                          <CardTitle className="text-xl">{announcement.title}</CardTitle>
+                          <CardTitle className="text-xl">
+                            {announcement.title}
+                          </CardTitle>
                           <div className="flex items-center gap-2 mt-2">
-                            <Badge variant={getPriorityColor(announcement.priority)}>
+                            <Badge
+                              variant={getPriorityColor(announcement.priority)}
+                            >
                               {announcement.priority}
                             </Badge>
                             <span className="text-sm text-muted-foreground flex items-center gap-1">
                               <Calendar className="h-3 w-3" />
-                              {format(new Date(announcement.date), "MMM dd, yyyy")}
+                              {format(
+                                new Date(announcement.publishedAt),
+                                "MMM dd, yyyy"
+                              )}
                             </span>
                           </div>
                         </div>
@@ -99,22 +136,38 @@ const Announcements = () => {
           </div>
         </motion.div>
 
-        <Dialog open={!!selectedAnnouncement} onOpenChange={() => setSelectedAnnouncement(null)}>
+        <Dialog
+          open={!!selectedAnnouncement}
+          onOpenChange={() => setSelectedAnnouncement(null)}
+        >
           <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-3">
-                <span className="text-3xl">{selectedAnnouncement && getCategoryIcon(selectedAnnouncement.category)}</span>
+                <span className="text-3xl">
+                  {selectedAnnouncement &&
+                    getCategoryIcon(selectedAnnouncement.category)}
+                </span>
                 {selectedAnnouncement?.title}
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <div className="flex items-center gap-2">
-                <Badge variant={(selectedAnnouncement && getPriorityColor(selectedAnnouncement.priority)) || "default"}>
+                <Badge
+                  variant={
+                    (selectedAnnouncement &&
+                      getPriorityColor(selectedAnnouncement.priority)) ||
+                    "default"
+                  }
+                >
                   {selectedAnnouncement?.priority}
                 </Badge>
                 <span className="text-sm text-muted-foreground flex items-center gap-1">
                   <Calendar className="h-3 w-3" />
-                  {selectedAnnouncement && format(new Date(selectedAnnouncement.date), "MMMM dd, yyyy")}
+                  {selectedAnnouncement &&
+                    format(
+                      new Date(selectedAnnouncement.publishedAt),
+                      "MMMM dd, yyyy"
+                    )}
                 </span>
               </div>
               <p className="text-foreground leading-relaxed">

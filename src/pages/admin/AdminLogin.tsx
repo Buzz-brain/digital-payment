@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Lock, Mail, Shield } from 'lucide-react';
+import { Lock, User, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,7 +10,7 @@ import { useAdminStore } from '@/store/adminStore';
 import { toast } from '@/hooks/use-toast';
 
 export default function AdminLogin() {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
@@ -19,11 +19,8 @@ export default function AdminLogin() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-
-    // Simulate API call
-    setTimeout(() => {
-      const success = login(email, password);
-      
+    try {
+      const success = await login(username, password);
       if (success) {
         toast({
           title: 'Login Successful',
@@ -33,16 +30,24 @@ export default function AdminLogin() {
       } else {
         toast({
           title: 'Login Failed',
-          description: 'Invalid email or password',
+          description: 'Invalid username or password',
           variant: 'destructive',
         });
       }
+    } catch (err: any) {
+      const message = err?.message || 'Server error';
+      toast({
+        title: 'Login Failed',
+        description: message,
+        variant: 'destructive',
+      });
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary via-primary-light to-primary-dark p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-primary-light to-primary-dark p-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -67,15 +72,16 @@ export default function AdminLogin() {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Email Address</Label>
+                <Label htmlFor="username">Username</Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
-                    id="email"
-                    type="email"
-                    placeholder="admin@dpi.gov"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    id="username"
+                    name="username"
+                    type="text"
+                    placeholder="adminuser"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
                     className="pl-10"
                     required
                   />
@@ -107,10 +113,10 @@ export default function AdminLogin() {
               </Button>
 
               <div className="text-xs text-center text-muted-foreground mt-4 space-y-1">
-                <p className="font-medium">Demo Accounts:</p>
-                <p>Super Admin: admin@dpi.gov / admin123</p>
-                <p>Moderator: moderator@dpi.gov / mod123</p>
-                <p>Viewer: viewer@dpi.gov / view123</p>
+                <p className="font-medium">Demo Credentials (JSON):</p>
+                <pre className="text-xs text-muted-foreground bg-muted/20 p-2 rounded">
+{`{\n  "username": "adminuser",\n  "password": "adminpass"\n}`}
+                </pre>
               </div>
             </form>
           </CardContent>

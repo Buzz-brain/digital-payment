@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { User, Mail, Phone, Shield, Languages, Moon, Sun, Type } from "lucide-react";
@@ -14,23 +14,46 @@ import { useAuthStore } from "@/store/authStore";
 
 const Profile = () => {
   const { t, i18n } = useTranslation();
-  const { user } = useAuthStore();
+  const { user, getProfile, updateProfile } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [largeText, setLargeText] = useState(false);
   const [profileData, setProfileData] = useState({
-    name: user?.fullName || "",
-    email: "user@dpi.gov.ng",
-    phone: "+234 800 000 0000",
+    username: user?.username || '',
+    fullName: user?.fullName || "",
+    email: user?.email || "",
+    phone: user?.phone || "",
   });
+
+  useEffect(() => {
+    // fetch fresh profile on mount
+    getProfile().catch(() => {});
+    // update local form when store user changes
+  }, []);
+
+  useEffect(() => {
+    if (user) {
+      setProfileData({
+        username: user.username || '',
+        fullName: user.fullName || '',
+        email: user.email || '',
+        phone: user.phone || '',
+      });
+    }
+  }, [user]);
 
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => {
+    try {
+      await updateProfile({ fullName: profileData.fullName, email: profileData.email, phone: profileData.phone, username: profileData.username });
+      toast.success(t('profileUpdated') || 'Profile updated successfully!');
+    } catch (err: any) {
+      const msg = (err && err.message) || 'Failed to update profile';
+      toast.error(msg);
+    } finally {
       setLoading(false);
-      toast.success("Profile updated successfully!");
-    }, 1500);
+    }
   };
 
   const handlePasswordChange = async (e: React.FormEvent) => {
@@ -81,11 +104,20 @@ const Profile = () => {
                 <CardContent>
                   <form onSubmit={handleProfileUpdate} className="space-y-4">
                     <div className="space-y-2">
+                      <Label htmlFor="username">{t("username")}</Label>
+                      <Input
+                        id="username"
+                        value={profileData.username}
+                        onChange={(e) => setProfileData({ ...profileData, username: e.target.value })}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
                       <Label htmlFor="name">{t("fullName")}</Label>
                       <Input
                         id="name"
-                        value={profileData.name}
-                        onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
+                        value={profileData.fullName}
+                        onChange={(e) => setProfileData({ ...profileData, fullName: e.target.value })}
                       />
                     </div>
                     <div className="space-y-2">

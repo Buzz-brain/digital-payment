@@ -1,7 +1,8 @@
 import { useState } from 'react';
+import apiFetch from '@/lib/api';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Eye, EyeOff, CheckCircle, ArrowLeft } from 'lucide-react';
+import { Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,6 +12,8 @@ import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
 
 const Register = () => {
+    const [ninInfo, setNinInfo] = useState<{ fullName: string; phone: string; email: string } | null>(null);
+    const [ninLoading, setNinLoading] = useState(false);
   const navigate = useNavigate();
   const { register } = useAuthStore();
   const { toast } = useToast();
@@ -19,37 +22,43 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [step, setStep] = useState(1);
-  const [otpSent, setOtpSent] = useState(false);
+  // ...existing code...
   
   const [formData, setFormData] = useState({
-    fullName: '',
+    username: '',
     nin: '',
-    phone: '',
-    email: '',
     password: '',
     confirmPassword: '',
-    otp: '',
+    role: 'citizen',
   });
 
   const validateNIN = (nin: string) => {
     return /^\d{11}$/.test(nin);
   };
 
-  const validatePhone = (phone: string) => {
-    return /^0\d{10}$/.test(phone);
-  };
+  // phone validation removed — phone is obtained from NIN info on the backend
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<any>) => {
+        if (e.target.name === 'nin' && e.target.value.length === 11) {
+          setNinLoading(true);
+          apiFetch(`/api/nininfo/${e.target.value}`)
+            .then((data: any) => {
+              setNinInfo({ fullName: data.fullName, phone: data.phone, email: data.email });
+            })
+            .catch(() => {
+              setNinInfo(null);
+            })
+            .finally(() => setNinLoading(false));
+        }
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
   };
 
-  const handleStep1Submit = async (e: React.FormEvent) => {
+  const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateNIN(formData.nin)) {
       toast({
         title: 'Invalid NIN',
@@ -59,12 +68,14 @@ const Register = () => {
       return;
     }
 
-    if (!validatePhone(formData.phone)) {
+    // Ensure we have fetched NIN info before attempting registration
+    if (!ninInfo) {
       toast({
-        title: 'Invalid Phone Number',
-        description: 'Phone number must start with 0 and be 11 digits',
+        title: 'NIN Not Verified',
+        description: 'Please ensure your NIN is valid and NIN details are loaded before registering.',
         variant: 'destructive',
       });
+      setLoading(false);
       return;
     }
 
@@ -86,56 +97,48 @@ const Register = () => {
       return;
     }
 
-    // Simulate OTP sending
     setLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    setLoading(false);
-    setOtpSent(true);
-    setStep(2);
-    
-    toast({
-      title: 'OTP Sent',
-      description: `Verification code sent to ${formData.phone}`,
-    });
-  };
-
-  const handleStep2Submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (formData.otp.length !== 6) {
-      toast({
-        title: 'Invalid OTP',
-        description: 'Please enter the 6-digit code',
-        variant: 'destructive',
+    try {
+      const success = await register({
+        username: formData.username,
+        nin: formData.nin,
+        password: formData.password,
+        role: formData.role,
       });
-      return;
-    }
+      setLoading(false);
 
-    setLoading(true);
-    
-    const success = await register({
-      fullName: formData.fullName,
-      nin: formData.nin,
-      phone: formData.phone,
-      password: formData.password,
-    });
-
-    setLoading(false);
-
-    if (success) {
-      toast({
-        title: 'Registration Successful!',
-        description: 'Welcome to DPI. Your account has been created.',
-      });
-      navigate('/dashboard');
-    } else {
-      toast({
-        title: 'Registration Failed',
-        description: 'An account with this NIN already exists',
-        variant: 'destructive',
-      });
+      if (success) {
+        toast({
+          title: 'Registration Successful!',
+          description: 'Welcome to DPI. Your account has been created.',
+        });
+        navigate('/dashboard');
+      } else {
+        toast({
+          title: 'Registration Failed',
+          description: 'An account with this NIN or username already exists',
+          variant: 'destructive',
+        });
+      }
+    } catch (err: any) {
+      setLoading(false);
+      const message = err?.message || 'Server error';
+      toast({ title: 'Registration Failed', description: message, variant: 'destructive' });
     }
   };
+
+  // Form readiness: require username, valid NIN, matching passwords of sufficient length, and loaded NIN info
+  const isFormReady = Boolean(
+    formData.username &&
+    validateNIN(formData.nin) &&
+    formData.password &&
+    formData.password.length >= 6 &&
+    formData.password === formData.confirmPassword &&
+    ninInfo &&
+    !loading
+  );
+
+  // helper state and handlers
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-primary/5 py-12 px-4">
@@ -149,7 +152,7 @@ const Register = () => {
           <CardHeader className="space-y-1">
             <div className="flex items-center justify-between">
               <CardTitle className="text-2xl font-bold">
-                {step === 1 ? t('register') : 'Verify Your Account'}
+                {t('register')}
               </CardTitle>
               <Link to="/">
                 <Button variant="ghost" size="icon">
@@ -158,22 +161,18 @@ const Register = () => {
               </Link>
             </div>
             <CardDescription>
-              {step === 1
-                ? 'Create your DPI account to get started'
-                : 'Enter the OTP sent to your phone number'}
+              {'Create your DPI account to get started'}
             </CardDescription>
           </CardHeader>
-          
           <CardContent>
-            {step === 1 ? (
-              <form onSubmit={handleStep1Submit} className="space-y-4">
+            <form onSubmit={handleRegisterSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="fullName">{t('fullName')}</Label>
+                  <Label htmlFor="username">{t('username') || 'Username'}</Label>
                   <Input
-                    id="fullName"
-                    name="fullName"
-                    placeholder="Enter your full name"
-                    value={formData.fullName}
+                    id="username"
+                    name="username"
+                    placeholder="Enter your username"
+                    value={formData.username}
                     onChange={handleInputChange}
                     required
                   />
@@ -193,29 +192,38 @@ const Register = () => {
                   <p className="text-xs text-muted-foreground">11-digit National Identity Number</p>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="phone">{t('phone')}</Label>
-                  <Input
-                    id="phone"
-                    name="phone"
-                    placeholder="08012345678"
-                    maxLength={11}
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
+                {formData.nin.length === 11 && (
+                  <div className="space-y-2">
+                    {ninLoading ? (
+                      <p className="text-sm text-muted-foreground">Fetching NIN details...</p>
+                    ) : ninInfo ? (
+                      <div className="bg-primary/10 p-4 rounded-lg border border-primary/20 mt-2">
+                        <p className="font-semibold mb-2">NIN Details Preview</p>
+                        <div className="grid grid-cols-1 gap-1 text-sm">
+                          <div><span className="font-medium">Full Name:</span> {ninInfo.fullName}</div>
+                          <div><span className="font-medium">Phone:</span> {ninInfo.phone}</div>
+                          <div><span className="font-medium">Email:</span> {ninInfo.email}</div>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-sm text-destructive">NIN not found or invalid.</p>
+                    )}
+                  </div>
+                )}
 
                 <div className="space-y-2">
-                  <Label htmlFor="email">{t('email')}</Label>
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    placeholder="your.email@example.com (optional)"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                  />
+                  <Label htmlFor="role">Role</Label>
+                  <select
+                    id="role"
+                    name="role"
+                    value={formData.role}
+                    onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                    className="w-full border rounded px-3 py-2"
+                  >
+                    <option value="citizen">Citizen</option>
+                    <option value="admin">Admin</option>
+                    <option value="agent">Agent</option>
+                  </select>
                 </div>
 
                 <div className="space-y-2">
@@ -262,9 +270,13 @@ const Register = () => {
                   </div>
                 </div>
 
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? t('loading') : t('continueText')}
+                <Button type="submit" className="w-full" disabled={!isFormReady}>
+                  {loading ? t('loading') : t('register')}
                 </Button>
+
+                {!isFormReady && (
+                  <p className="text-xs text-muted-foreground mt-2">You must enter a valid NIN and have NIN details loaded before registering.</p>
+                )}
 
                 <div className="text-center text-sm">
                   <span className="text-muted-foreground">{t('alreadyHaveAccount')} </span>
@@ -273,56 +285,8 @@ const Register = () => {
                   </Link>
                 </div>
               </form>
-            ) : (
-              <form onSubmit={handleStep2Submit} className="space-y-6">
-                <div className="bg-primary/5 p-4 rounded-lg flex items-start space-x-3">
-                  <CheckCircle className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                  <div className="text-sm">
-                    <p className="font-medium">OTP sent successfully</p>
-                    <p className="text-muted-foreground">Check your phone for the 6-digit code</p>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="otp">Verification Code</Label>
-                  <Input
-                    id="otp"
-                    name="otp"
-                    placeholder="123456"
-                    maxLength={6}
-                    value={formData.otp}
-                    onChange={handleInputChange}
-                    required
-                    className="text-center text-2xl tracking-widest"
-                  />
-                </div>
-
-                <div className="flex gap-3">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full"
-                    onClick={() => setStep(1)}
-                  >
-                    {t('back')}
-                  </Button>
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? t('loading') : 'Verify & Register'}
-                  </Button>
-                </div>
-
-                <button
-                  type="button"
-                  className="w-full text-center text-sm text-primary hover:underline"
-                  onClick={handleStep1Submit}
-                >
-                  Resend OTP
-                </button>
-              </form>
-            )}
           </CardContent>
         </Card>
-
         <p className="mt-6 text-center text-sm text-muted-foreground">
           By registering, you agree to DPI's Terms of Service and Privacy Policy
         </p>

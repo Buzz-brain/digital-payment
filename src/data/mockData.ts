@@ -13,8 +13,11 @@ export interface Announcement {
   title: string;
   content: string;
   category: 'disbursement' | 'update' | 'maintenance' | 'general';
-  date: string;
+  date?: string;
   priority: 'high' | 'medium' | 'low';
+  createdBy?: string;
+  published?: boolean;
+  publishedAt?: string;
 }
 
 export interface Notification {
@@ -80,49 +83,6 @@ export const mockTransactions: Transaction[] = [
     date: '2025-02-10T13:30:00',
     status: 'completed',
     reference: 'DPI-TRF-2025-006',
-  },
-];
-
-export const mockAnnouncements: Announcement[] = [
-  {
-    id: 'ANN001',
-    title: 'March 2025 Disbursement Schedule',
-    content: 'The government disbursement for eligible citizens will be processed on March 15th, 2025. Funds will be credited directly to your DPI wallet. Please ensure your profile information is up to date.',
-    category: 'disbursement',
-    date: '2025-03-01T09:00:00',
-    priority: 'high',
-  },
-  {
-    id: 'ANN002',
-    title: 'System Maintenance Notice',
-    content: 'DPI services will undergo scheduled maintenance on March 20th from 2:00 AM to 4:00 AM. Services may be temporarily unavailable during this period.',
-    category: 'maintenance',
-    date: '2025-03-10T14:00:00',
-    priority: 'medium',
-  },
-  {
-    id: 'ANN003',
-    title: 'New Features: Language Support',
-    content: 'We are excited to announce support for Hausa, Yoruba, and Igbo languages! You can now access DPI in your preferred language through Settings.',
-    category: 'update',
-    date: '2025-03-05T10:30:00',
-    priority: 'medium',
-  },
-  {
-    id: 'ANN004',
-    title: 'Enhanced Security Features',
-    content: 'Your security is our priority. We have implemented additional security measures including two-factor authentication and biometric login options.',
-    category: 'update',
-    date: '2025-02-28T11:00:00',
-    priority: 'high',
-  },
-  {
-    id: 'ANN005',
-    title: 'Community Feedback Initiative',
-    content: 'Your voice matters! Share your experience and suggestions to help us improve DPI services. Access the feedback form in your dashboard.',
-    category: 'general',
-    date: '2025-02-20T15:00:00',
-    priority: 'low',
   },
 ];
 

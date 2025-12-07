@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
@@ -8,28 +8,157 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
+import { apiPost, apiGet } from '@/lib/api';
+import { useAuthStore } from '@/store/authStore';
+import { useQueryClient } from '@tanstack/react-query';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 
 const SendMoney = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     recipient: "",
     amount: "",
     description: "",
   });
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [pendingPayload, setPendingPayload] = useState<any>(null);
+  const [recipientName, setRecipientName] = useState<string | null>(null);
+  const [recipientLookupLoading, setRecipientLookupLoading] = useState(false);
+  const [recipientNotFound, setRecipientNotFound] = useState(false);
+
+  const LARGE_TRANSFER_THRESHOLD = 100000; // ₦100,000
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
-    // Simulate API call
-    setTimeout(() => {
+    // validate NIN
+    const recipient = (formData.recipient || '').trim();
+    if (!/^[0-9]{11}$/.test(recipient)) {
       setLoading(false);
-      toast.success(`Successfully sent ₦${formData.amount} to ${formData.recipient}`);
-      navigate("/dashboard");
-    }, 2000);
+      toast.error('Recipient NIN must be 11 digits');
+      return;
+    }
+
+    // ensure recipient exists and fullname known
+    const ok = await lookupRecipient(recipient);
+    if (!ok) {
+      setLoading(false);
+      toast.error('Recipient NIN not found');
+      return;
+    }
+
+    const amountNum = Number(formData.amount);
+    if (!amountNum || amountNum <= 0) {
+      setLoading(false);
+      toast.error('Enter a valid amount');
+      return;
+    }
+
+    const payload = { recipient, amount: amountNum, description: formData.description };
+
+    // If large transfer, ask for confirmation
+    if (amountNum >= LARGE_TRANSFER_THRESHOLD) {
+      setPendingPayload(payload);
+      setConfirmOpen(true);
+      setLoading(false);
+      return;
+    }
+
+    await doTransfer(payload);
   };
+
+  const doTransfer = async (payload: any) => {
+    setLoading(true);
+    try {
+      const res: any = await apiPost('/api/transactions/send', payload);
+      setLoading(false);
+      setConfirmOpen(false);
+      setPendingPayload(null);
+      toast.success(res?.message || `Successfully sent ₦${payload.amount} to ${recipientName || payload.recipient}`);
+
+      // Best-practice: refresh only the wallet and transactions resources
+      try {
+        const userId = useAuthStore.getState().user?.id;
+        if (userId) {
+          // fetch updated wallet
+          const walletResp: any = await apiGet(`/api/wallet/${userId}`);
+          // fetch updated transactions for logged in user
+          const txResp: any = await apiGet('/api/transactions');
+
+          // Update react-query cache so Transactions page refreshes immediately
+          try {
+            const txs = txResp?.transactions || txResp || [];
+            queryClient.setQueryData(['transactions'], txs);
+          } catch (e) {
+            // ignore cache update errors
+          }
+
+          // update zustand auth store with new wallet info
+          useAuthStore.setState((state: any) => ({
+            wallet: walletResp || null,
+            user: state.user ? { ...state.user, walletBalance: walletResp?.balance ?? state.user.walletBalance, wallet: walletResp ? { balance: walletResp.balance ?? 0, ledger: walletResp.ledger || [] } : state.user.wallet } : state.user,
+          }));
+
+          // Optionally cache transactions somewhere; if your Transactions page reads from an in-memory query/cache, you can update it here.
+        }
+      } catch (e) {
+        // non-fatal; we already succeeded the transfer. Log silently and continue.
+        // console.warn('Failed to refresh wallet/transactions after transfer', e);
+      }
+
+      navigate('/dashboard');
+    } catch (err: any) {
+      setLoading(false);
+      toast.error(err?.message || 'Transfer failed');
+    }
+  };
+
+  // lookup recipient by NIN and set recipientName/flags
+  const lookupRecipient = async (nin: string) => {
+    const cleaned = (nin || '').trim();
+    if (!/^[0-9]{11}$/.test(cleaned)) {
+      setRecipientName(null);
+      setRecipientNotFound(false);
+      return false;
+    }
+    setRecipientLookupLoading(true);
+    try {
+      const res: any = await apiGet(`/api/nininfo/${cleaned}`);
+      // controller returns fullName
+      setRecipientName(res?.fullName || res?.fullName || res?.fullName);
+      setRecipientNotFound(false);
+      setRecipientLookupLoading(false);
+      return true;
+    } catch (err: any) {
+      setRecipientName(null);
+      setRecipientNotFound(true);
+      setRecipientLookupLoading(false);
+      return false;
+    }
+  };
+
+  // debounce lookup when recipient changes
+  useEffect(() => {
+    const nin = (formData.recipient || '').trim();
+    if (nin.length !== 11) {
+      setRecipientName(null);
+      setRecipientNotFound(false);
+      return;
+    }
+    const t = setTimeout(() => {
+      lookupRecipient(nin);
+    }, 450);
+    return () => clearTimeout(t);
+  }, [formData.recipient]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background py-12 px-4">
@@ -60,8 +189,8 @@ const SendMoney = () => {
                 </div>
               </div>
             </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <CardContent>
+                <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="recipient" className="flex items-center gap-2">
                     <User className="h-4 w-4" />
@@ -74,6 +203,11 @@ const SendMoney = () => {
                     onChange={(e) => setFormData({ ...formData, recipient: e.target.value })}
                     required
                   />
+                  <div className="mt-1 text-sm">
+                    {recipientLookupLoading && <span className="text-muted-foreground">Checking recipient...</span>}
+                    {!recipientLookupLoading && recipientName && <span className="text-success">Recipient: {recipientName}</span>}
+                    {!recipientLookupLoading && recipientNotFound && <span className="text-destructive">Recipient NIN not found</span>}
+                  </div>
                 </div>
 
                 <div className="space-y-2">
@@ -104,11 +238,27 @@ const SendMoney = () => {
                 <Button
                   type="submit"
                   className="w-full"
-                  disabled={loading}
+                  disabled={loading || recipientNotFound}
                 >
                   {loading ? t("processing") : t("sendMoney")}
                 </Button>
               </form>
+                {/* Confirmation dialog for large transfers */}
+                <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Confirm Transfer</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <p>You're about to send <strong>₦{pendingPayload?.amount}</strong> to <strong>{recipientName || pendingPayload?.recipient}</strong>.</p>
+                      <p className="text-sm text-muted-foreground">This action cannot be undone. Please confirm you want to proceed.</p>
+                      <div className="flex gap-2 justify-end">
+                        <Button variant="outline" onClick={() => { setConfirmOpen(false); setPendingPayload(null); }}>Cancel</Button>
+                        <Button onClick={() => pendingPayload && doTransfer(pendingPayload)} disabled={loading || !pendingPayload}>{loading ? 'Processing...' : 'Confirm'}</Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
             </CardContent>
           </Card>
         </motion.div>

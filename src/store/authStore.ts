@@ -1,27 +1,41 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import apiFetch from '@/lib/api';
 
 interface User {
   id: string;
+  username?: string;
   fullName: string;
   nin: string;
   phone: string;
   walletBalance: number;
   email?: string;
+  wallet?: {
+    balance: number;
+    ledger?: Array<any>;
+  };
 }
 
 interface AuthState {
   user: User | null;
+  wallet?: { balance: number; ledger?: Array<any> } | null;
+  initializing?: boolean;
   isAuthenticated: boolean;
-  login: (nin: string, password: string) => Promise<boolean>;
+  token?: string;
+  login: (identifier: string, password: string) => Promise<boolean>;
   register: (data: {
-    fullName: string;
+    username?: string;
+    fullName?: string;
     nin: string;
-    phone: string;
+    phone?: string;
     password: string;
+    role?: string;
   }) => Promise<boolean>;
-  logout: () => void;
+  logout: (redirectTo?: string) => Promise<void>;
   updateBalance: (amount: number) => void;
+  fetchCurrentUser: () => Promise<void>;
+  getProfile: () => Promise<void>;
+  updateProfile: (data: { fullName?: string; email?: string; phone?: string; username?: string }) => Promise<void>;
 }
 
 // Mock user data
@@ -40,44 +54,164 @@ export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
       user: null,
+      wallet: null,
+      initializing: false,
       isAuthenticated: false,
       
-      login: async (nin: string, password: string) => {
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        
-        const user = mockUsers[nin];
-        if (user && user.password === password) {
-          const { password: _, ...userData } = user;
-          set({ user: userData, isAuthenticated: true });
+      login: async (identifier: string, password: string) => {
+        // Try backend login first
+        try {
+          const payload: any = { password };
+          // send as nin when identifier matches 11 digits, otherwise as username
+          if (/^\d{11}$/.test(identifier)) payload.nin = identifier;
+          else payload.username = identifier;
+
+          const res: any = await apiFetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+
+          const userResp = res.user || res;
+          set({ user: { id: userResp.id || userResp._id, username: userResp.username, fullName: userResp.fullName || userResp.username || '', nin: userResp.nin, phone: userResp.phone || '', walletBalance: userResp.walletBalance || 0, email: userResp.email }, isAuthenticated: true, token: res.token });
           return true;
+        } catch (err: any) {
+          // If it's an HTTP error from server (e.g., invalid credentials), rethrow so UI can show message
+          if (err && typeof err === 'object' && 'status' in err) throw err;
+
+          // Fallback to mock behaviour for offline/dev
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+          const user = mockUsers[identifier];
+          if (user && user.password === password) {
+            const { password: _, ...userData } = user;
+            set({ user: userData, isAuthenticated: true });
+            return true;
+          }
+          return false;
         }
-        return false;
       },
       
       register: async (data) => {
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-        
-        if (mockUsers[data.nin]) {
-          return false; // User already exists
+        // Try real backend registration first
+        try {
+          const payload = {
+            username: data.username,
+            nin: data.nin,
+            password: data.password,
+            role: data.role,
+          };
+          const res: any = await apiFetch('/api/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+
+          // Expecting { user, token }
+          const userResp = res.user || res;
+          set({ user: { id: userResp.id || userResp._id, username: userResp.username, fullName: userResp.fullName || userResp.username || '', nin: userResp.nin, phone: userResp.phone || '', walletBalance: userResp.walletBalance || 0, email: userResp.email }, isAuthenticated: true, token: res.token });
+          return true;
+        } catch (err: any) {
+          // If server returned an HTTP error (validation like NIN not found), rethrow
+          if (err && typeof err === 'object' && 'status' in err) {
+            throw err;
+          }
+          // Otherwise treat as network/offline and fall back to local mock behaviour
+          await new Promise((resolve) => setTimeout(resolve, 1500));
+          if (mockUsers[data.nin]) {
+            return false;
+          }
+          const displayName = data.fullName || data.username || 'User';
+          const newUser: User = {
+            id: Date.now().toString(),
+            fullName: displayName,
+            nin: data.nin,
+            phone: data.phone || '',
+            walletBalance: 0,
+          };
+          mockUsers[data.nin] = { ...newUser, password: data.password };
+          set({ user: newUser, isAuthenticated: true });
+          return true;
         }
-        
-        const newUser: User = {
-          id: Date.now().toString(),
-          fullName: data.fullName,
-          nin: data.nin,
-          phone: data.phone,
-          walletBalance: 0,
+      },
+      fetchCurrentUser: (() => {
+        // Guard to prevent concurrent/duplicate calls and rapid repeats
+        let inFlight: Promise<void> | null = null;
+        let lastFetchAt = 0;
+        const COOLDOWN_MS = 1500; // do not refetch more often than this
+        return async () => {
+          const now = Date.now();
+          if (inFlight) return inFlight;
+          if (now - lastFetchAt < COOLDOWN_MS) {
+            // short-circuit repeated rapid calls
+            return Promise.resolve();
+          }
+          lastFetchAt = now;
+          const p = (async () => {
+            set({ initializing: true });
+            try {
+              // helpful debug if needed
+              // console.debug('fetchCurrentUser: sending /api/auth/me');
+              const res: any = await apiFetch('/api/auth/me', { method: 'GET' });
+              const userResp = res.user || res;
+              const wallet = res.wallet || null;
+              set({ user: { id: userResp._id || userResp.id, username: userResp.username, fullName: userResp.fullName || userResp.username || '', nin: userResp.nin, phone: userResp.phone || '', walletBalance: wallet?.balance || 0, email: userResp.email, wallet: wallet ? { balance: wallet.balance || 0, ledger: wallet.ledger || [] } : undefined }, wallet: wallet ? { balance: wallet.balance || 0, ledger: wallet.ledger || [] } : null, isAuthenticated: true });
+            } catch (e) {
+              // Couldn't fetch current user — ensure client is logged out
+              set({ user: null, wallet: null, isAuthenticated: false, token: undefined });
+              try { localStorage.removeItem('dpi-auth'); } catch (_) {}
+            } finally {
+              set({ initializing: false });
+              inFlight = null;
+            }
+          })();
+          inFlight = p;
+          return p;
         };
-        
-        mockUsers[data.nin] = { ...newUser, password: data.password };
-        set({ user: newUser, isAuthenticated: true });
-        return true;
+      })(),
+
+      // Fetch profile via dedicated user endpoint and update store.user
+      getProfile: async () => {
+        try {
+          const res: any = await apiFetch('/api/user/profile', { method: 'GET' });
+          const userResp = res || {};
+          set((state) => ({ user: { ...(state.user || {}), id: userResp._id || userResp.id, username: userResp.username, fullName: userResp.fullName || userResp.username || '', nin: userResp.nin, phone: userResp.phone || '', walletBalance: state.user?.walletBalance || 0, email: userResp.email } }));
+        } catch (e) {
+          // ignore or clear store on error
+        }
+      },
+
+      updateProfile: async (data) => {
+        try {
+          const res: any = await apiFetch('/api/user/profile', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+          const userResp = res || {};
+          set((state) => ({ user: { id: userResp._id || userResp.id, username: userResp.username, fullName: userResp.fullName || userResp.username || '', nin: userResp.nin, phone: userResp.phone || '', walletBalance: state.user?.walletBalance || 0, email: userResp.email }, isAuthenticated: true }));
+        } catch (e) {
+          throw e;
+        }
       },
       
-      logout: () => {
-        set({ user: null, isAuthenticated: false });
+      logout: async (redirectTo: string = '/login') => {
+        // Perform backend logout (best-effort) to blacklist token, then always clear client state
+        try {
+          await apiFetch('/api/auth/logout', { method: 'POST' });
+        } catch (e) {
+          // swallow network errors — still proceed to clear client state
+        }
+
+        // Clear persisted zustand entry and in-memory state
+        try {
+          localStorage.removeItem('dpi-auth');
+        } catch (e) {
+          // ignore
+        }
+        set({ user: null, isAuthenticated: false, token: undefined });
+
+        // Redirect to provided path (default: /login)
+        try {
+          window.location.href = redirectTo;
+        } catch (e) {
+          // ignore in non-browser environments
+        }
       },
       
       updateBalance: (amount: number) => {
@@ -90,6 +224,8 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'dpi-auth',
+      // Do not persist transient flags like `initializing`
+      partialize: (state) => ({ user: state.user, wallet: state.wallet, isAuthenticated: state.isAuthenticated, token: state.token }),
     }
   )
 );

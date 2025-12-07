@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
 import { useAdminStore } from "@/store/adminStore";
+import { useEffect } from 'react';
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import Landing from "./pages/Landing";
@@ -45,6 +46,29 @@ const AdminProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 const App = () => {
+  // Attempt to fetch current user on app start to hydrate auth state
+  const fetchCurrentUser = useAuthStore((s) => s.fetchCurrentUser);
+  const initializing = useAuthStore((s) => s.initializing);
+  const token = useAuthStore((s) => s.token);
+  useEffect(() => {
+    // best-effort; fetch and populate user if token exists
+    if (token) {
+      fetchCurrentUser().catch(() => {});
+    }
+    // run once on mount or when token changes
+  }, [token]);
+
+  if (initializing) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto mb-4" />
+          <div className="text-lg font-medium">Loading...</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
