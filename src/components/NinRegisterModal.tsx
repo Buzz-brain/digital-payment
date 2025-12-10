@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import apiFetch from '@/lib/api';
+import { apiPost } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -65,7 +65,7 @@ const NinRegisterModal: React.FC<Props> = ({ isOpen, initialNin = '', onClose, o
         tribe: tribe || undefined,
       };
 
-      const created = await apiFetch('/api/nininfo', { method: 'POST', body: JSON.stringify(payload) });
+      const created = await apiPost('/api/nininfo', payload);
       toast({ title: t('ninRegister.successTitle'), description: t('ninRegister.successDesc') });
       onSuccess(created);
       onClose();
