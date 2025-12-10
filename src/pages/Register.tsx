@@ -10,9 +10,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useAuthStore } from '@/store/authStore';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
+import i18n from '@/i18n/config';
+import { speakText } from '@/utils/speakText';
+import NinRegisterModal from '@/components/NinRegisterModal';
 
 const Register = () => {
-    const [ninInfo, setNinInfo] = useState<{ fullName: string; phone: string; email: string } | null>(null);
+    const [ninInfo, setNinInfo] = useState<{ fullName: string; phone: string; email: string; isVerified: boolean } | null>(null);
     const [ninLoading, setNinLoading] = useState(false);
   const navigate = useNavigate();
   const { register } = useAuthStore();
@@ -31,6 +34,7 @@ const Register = () => {
     confirmPassword: '',
     role: 'citizen',
   });
+  const [showNinModal, setShowNinModal] = useState(false);
 
   const validateNIN = (nin: string) => {
     return /^\d{11}$/.test(nin);
@@ -43,7 +47,13 @@ const Register = () => {
           setNinLoading(true);
           apiFetch(`/api/nininfo/${e.target.value}`)
             .then((data: any) => {
-              setNinInfo({ fullName: data.fullName, phone: data.phone, email: data.email });
+              // Ensure the response includes isVerified (backend now returns it).
+              setNinInfo({
+                fullName: data.fullName,
+                phone: data.phone,
+                email: data.email,
+                isVerified: Boolean(data.isVerified),
+              });
             })
             .catch(() => {
               setNinInfo(null);
@@ -60,40 +70,46 @@ const Register = () => {
     e.preventDefault();
 
     if (!validateNIN(formData.nin)) {
-      toast({
-        title: 'Invalid NIN',
-        description: 'NIN must be exactly 11 digits',
-        variant: 'destructive',
-      });
+      const title = 'Invalid NIN';
+      const desc = 'NIN must be exactly 11 digits';
+      toast({ title, description: desc, variant: 'destructive' });
+      speakText(`${title}. ${desc}`, i18n.language);
       return;
     }
 
     // Ensure we have fetched NIN info before attempting registration
     if (!ninInfo) {
-      toast({
-        title: 'NIN Not Verified',
-        description: 'Please ensure your NIN is valid and NIN details are loaded before registering.',
-        variant: 'destructive',
-      });
+      const title = 'NIN Not Found';
+      const desc = 'Please ensure your NIN is valid and NIN details are loaded before registering.';
+      toast({ title, description: desc, variant: 'destructive' });
+      speakText(`${title}. ${desc}`, i18n.language);
+      setLoading(false);
+      return;
+    }
+
+    // Ensure NIN is verified
+    if (!ninInfo.isVerified) {
+      const title = 'NIN Not Verified';
+      const desc = 'Your NIN has not been verified yet. Please wait for administrator verification before registering. This typically takes 24-48 hours.';
+      toast({ title, description: desc, variant: 'destructive' });
+      speakText(`${title}. ${desc}`, i18n.language);
       setLoading(false);
       return;
     }
 
     if (formData.password.length < 6) {
-      toast({
-        title: 'Weak Password',
-        description: 'Password must be at least 6 characters',
-        variant: 'destructive',
-      });
+      const title = 'Weak Password';
+      const desc = 'Password must be at least 6 characters';
+      toast({ title, description: desc, variant: 'destructive' });
+      speakText(`${title}. ${desc}`, i18n.language);
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      toast({
-        title: 'Passwords do not match',
-        description: 'Please ensure both passwords are the same',
-        variant: 'destructive',
-      });
+      const title = 'Passwords do not match';
+      const desc = 'Please ensure both passwords are the same';
+      toast({ title, description: desc, variant: 'destructive' });
+      speakText(`${title}. ${desc}`, i18n.language);
       return;
     }
 
@@ -108,26 +124,27 @@ const Register = () => {
       setLoading(false);
 
       if (success) {
-        toast({
-          title: 'Registration Successful!',
-          description: 'Welcome to DPI. Your account has been created.',
-        });
+        const title = 'Registration Successful!';
+        const desc = 'Welcome to DPI. Your account has been created.';
+        toast({ title, description: desc });
+        speakText(`${title}. ${desc}`, i18n.language);
         navigate('/dashboard');
       } else {
-        toast({
-          title: 'Registration Failed',
-          description: 'An account with this NIN or username already exists',
-          variant: 'destructive',
-        });
+        const title = 'Registration Failed';
+        const desc = 'An account with this NIN or username already exists';
+        toast({ title, description: desc, variant: 'destructive' });
+        speakText(`${title}. ${desc}`, i18n.language);
       }
     } catch (err: any) {
       setLoading(false);
       const message = err?.message || 'Server error';
-      toast({ title: 'Registration Failed', description: message, variant: 'destructive' });
+      const title = 'Registration Failed';
+      toast({ title, description: message, variant: 'destructive' });
+      speakText(`${title}. ${message}`, i18n.language);
     }
   };
 
-  // Form readiness: require username, valid NIN, matching passwords of sufficient length, and loaded NIN info
+  // Form readiness: require username, valid NIN, matching passwords of sufficient length, and loaded verified NIN info
   const isFormReady = Boolean(
     formData.username &&
     validateNIN(formData.nin) &&
@@ -135,6 +152,7 @@ const Register = () => {
     formData.password.length >= 6 &&
     formData.password === formData.confirmPassword &&
     ninInfo &&
+    ninInfo.isVerified &&
     !loading
   );
 
@@ -197,16 +215,40 @@ const Register = () => {
                     {ninLoading ? (
                       <p className="text-sm text-muted-foreground">Fetching NIN details...</p>
                     ) : ninInfo ? (
-                      <div className="bg-primary/10 p-4 rounded-lg border border-primary/20 mt-2">
-                        <p className="font-semibold mb-2">NIN Details Preview</p>
-                        <div className="grid grid-cols-1 gap-1 text-sm">
+                      <div className={`p-4 rounded-lg border ${ninInfo.isVerified ? 'bg-green-50 border-green-300' : 'bg-amber-50 border-amber-300'} mt-2`}>
+                        <div className="flex items-start justify-between mb-3">
+                          <p className="font-semibold">NIN Details Preview</p>
+                          {ninInfo.isVerified ? (
+                            <div className="flex items-center gap-1 bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-medium">
+                              <span>✓</span>
+                              <span>Verified</span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-1 bg-amber-100 text-amber-700 px-2 py-1 rounded text-xs font-medium">
+                              <span>⏱</span>
+                              <span>Pending Verification</span>
+                            </div>
+                          )}
+                        </div>
+                        <div className="grid grid-cols-1 gap-2 text-sm mb-3">
                           <div><span className="font-medium">Full Name:</span> {ninInfo.fullName}</div>
                           <div><span className="font-medium">Phone:</span> {ninInfo.phone}</div>
                           <div><span className="font-medium">Email:</span> {ninInfo.email}</div>
                         </div>
+                        {!ninInfo.isVerified && (
+                          <div className="bg-white rounded p-3 text-sm text-amber-800 border border-amber-200">
+                            <p className="font-medium mb-1">⚠️ NIN Not Yet Verified</p>
+                            <p>Your NIN has been found in the system but has not been verified by an administrator yet. Please wait for verification to be completed before you can register. This typically takes 24-48 hours.</p>
+                          </div>
+                        )}
                       </div>
                     ) : (
-                      <p className="text-sm text-destructive">NIN not found or invalid.</p>
+                      <div>
+                        <p className="text-sm text-destructive mb-2">NIN not found or invalid.</p>
+                        <div>
+                          <Button type="button" onClick={() => setShowNinModal(true)} className="px-3 py-1">Register NIN</Button>
+                        </div>
+                      </div>
                     )}
                   </div>
                 )}
@@ -275,7 +317,9 @@ const Register = () => {
                 </Button>
 
                 {!isFormReady && (
-                  <p className="text-xs text-muted-foreground mt-2">You must enter a valid NIN and have NIN details loaded before registering.</p>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    {!ninInfo ? 'You must enter a valid NIN to proceed.' : !ninInfo.isVerified ? 'Your NIN is pending verification. You cannot register until it is verified by an administrator.' : 'Please complete all required fields with valid information.'}
+                  </p>
                 )}
 
                 <div className="text-center text-sm">
@@ -291,6 +335,15 @@ const Register = () => {
           By registering, you agree to DPI's Terms of Service and Privacy Policy
         </p>
       </motion.div>
+      <NinRegisterModal
+        isOpen={showNinModal}
+        initialNin={formData.nin}
+        onClose={() => setShowNinModal(false)}
+        onSuccess={(created) => {
+          // populate the ninInfo so the user can continue registration
+          setNinInfo(created);
+        }}
+      />
     </div>
   );
 };

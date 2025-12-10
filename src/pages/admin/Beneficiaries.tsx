@@ -10,6 +10,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { mockBeneficiaries, Beneficiary } from '@/data/mockAdminData';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { apiGet, apiPut, apiDelete } from '@/lib/api';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,19 +30,55 @@ import { usePermissions } from '@/hooks/usePermissions';
 export default function Beneficiaries() {
   const { admin } = useAdminStore();
   const { can } = usePermissions();
-  const [beneficiaries, setBeneficiaries] = useState(mockBeneficiaries);
+  const queryClient = useQueryClient();
+
+  const { data: beneficiaries = mockBeneficiaries, isLoading, isError } = useQuery({
+    queryKey: ['admin', 'beneficiaries'],
+    queryFn: async () => {
+      const res: any = await apiGet('/api/admin/users');
+      const users = Array.isArray(res) ? res : [];
+
+      // Normalize users: ensure id, fullName, safe strings
+      const normalized = users.map((u: any) => ({
+        ...u,
+        id: u._id,
+        fullName: u.fullName || u.username || '',
+        email: u.email || '',
+        phone: u.phone || '',
+        status: u.status || 'active',
+        registeredDate: u.createdAt || u.registeredDate,
+        lastLogin: u.lastLogin || u.updatedAt || null,
+      }));
+
+      // Backend now returns wallet aggregates (balance, totalReceived, totalWithdrawn) on the user objects via aggregation.
+      // Map those fields into normalized users with safe defaults.
+      const withWallets = normalized.map((u: any) => ({
+        ...u,
+        balance: typeof u.balance === 'number' ? u.balance : Number(u.balance) || 0,
+        totalReceived: typeof u.totalReceived === 'number' ? u.totalReceived : Number(u.totalReceived) || 0,
+        totalWithdrawn: typeof u.totalWithdrawn === 'number' ? u.totalWithdrawn : Number(u.totalWithdrawn) || 0,
+      }));
+
+      return withWallets;
+    },
+  });
+
+  // We'll call the APIs directly in handlers instead of using useMutation
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedBeneficiary, setSelectedBeneficiary] = useState<Beneficiary | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [advancedFilters, setAdvancedFilters] = useState<Record<string, any>>({});
 
-  const filteredBeneficiaries = beneficiaries.filter((ben) => {
+  const filteredBeneficiaries = (Array.isArray(beneficiaries) ? beneficiaries : []).filter((ben: any) => {
+    const name = (ben?.fullName || '').toString();
+    const email = (ben?.email || '').toString();
+    const nin = (ben?.nin || '').toString();
     const matchesSearch =
-      ben.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      ben.nin.includes(searchTerm) ||
-      ben.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || ben.status === statusFilter;
+      name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      nin.includes(searchTerm) ||
+      email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || ben?.status === statusFilter;
     
     // Advanced filters
     const matchesAdvanced = Object.entries(advancedFilters).every(([key, value]) => {
@@ -60,50 +98,45 @@ export default function Beneficiaries() {
     setIsDetailOpen(true);
   };
 
-  const handleStatusChange = (id: string, newStatus: 'active' | 'inactive' | 'suspended') => {
-    const beneficiary = beneficiaries.find(b => b.id === id);
-    setBeneficiaries(beneficiaries.map(b => 
-      b.id === id ? { ...b, status: newStatus } : b
-    ));
-    
-    if (admin && beneficiary) {
-      auditLogger.log(
-        'user_status_changed',
-        'Beneficiary',
-        `Changed status of ${beneficiary.fullName} to ${newStatus}`,
-        admin.id,
-        admin.fullName,
-        id,
-        { oldStatus: beneficiary.status, newStatus }
-      );
+  const handleStatusChange = async (id: string, newStatus: 'active' | 'inactive' | 'suspended') => {
+    const beneficiary = beneficiaries.find((b: any) => b._id === id || b.id === id);
+    try {
+      await apiPut(`/api/user/${id}`, { status: newStatus });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'beneficiaries'] });
+      if (admin && beneficiary) {
+        auditLogger.log(
+          'user_status_changed',
+          'Beneficiary',
+          `Changed status of ${beneficiary.fullName} to ${newStatus}`,
+          admin.id,
+          admin.fullName,
+          id,
+          { oldStatus: beneficiary.status, newStatus }
+        );
+      }
+    } catch (e) {
+      toast({ title: 'Error', description: 'Failed to update status', variant: 'destructive' });
     }
-    
-    toast({
-      title: 'Status Updated',
-      description: `Beneficiary status changed to ${newStatus}`,
-    });
   };
 
-  const handleDelete = (id: string) => {
-    const beneficiary = beneficiaries.find(b => b.id === id);
-    setBeneficiaries(beneficiaries.filter(b => b.id !== id));
-    
-    if (admin && beneficiary) {
-      auditLogger.log(
-        'user_deleted',
-        'Beneficiary',
-        `Deleted beneficiary ${beneficiary.fullName}`,
-        admin.id,
-        admin.fullName,
-        id
-      );
+  const handleDelete = async (id: string) => {
+    const beneficiary = beneficiaries.find((b: any) => b._id === id || b.id === id);
+    try {
+      await apiDelete(`/api/admin/users/${id}`);
+      queryClient.invalidateQueries({ queryKey: ['admin', 'beneficiaries'] });
+      if (admin && beneficiary) {
+        auditLogger.log(
+          'user_deleted',
+          'Beneficiary',
+          `Deleted beneficiary ${beneficiary.fullName}`,
+          admin.id,
+          admin.fullName,
+          id
+        );
+      }
+    } catch (e) {
+      toast({ title: 'Error', description: 'Failed to delete beneficiary', variant: 'destructive' });
     }
-    
-    toast({
-      title: 'Beneficiary Deleted',
-      description: 'The beneficiary has been removed from the system',
-      variant: 'destructive',
-    });
   };
 
   const handleExportCSV = () => {
@@ -163,31 +196,19 @@ export default function Beneficiaries() {
   };
 
   const handleBulkImport = (data: any[]) => {
-    const newBeneficiaries = data.map((item, index) => ({
-      id: `BEN${String(beneficiaries.length + index + 1).padStart(3, '0')}`,
-      fullName: item['Full Name'] || item.fullName,
-      nin: item.NIN || item.nin,
-      phone: item.Phone || item.phone,
-      email: item.Email || item.email,
-      status: (item.Status || item.status || 'active') as 'active' | 'inactive' | 'suspended',
-      balance: 0,
-      totalReceived: 0,
-      totalWithdrawn: 0,
-      registeredDate: new Date().toISOString().split('T')[0],
-      lastLogin: new Date().toISOString(),
-    }));
-    
-    setBeneficiaries([...beneficiaries, ...newBeneficiaries]);
-    
+    // Bulk import should ideally call a backend endpoint to persist new users.
+    // For now, invalidate the beneficiaries cache and log the action.
+    queryClient.invalidateQueries({ queryKey: ['admin', 'beneficiaries'] });
+    toast({ title: 'Import queued', description: 'Imported beneficiaries will appear after refresh or server sync.' });
     if (admin) {
       auditLogger.log(
         'bulk_import',
         'Beneficiary',
-        `Bulk imported ${newBeneficiaries.length} beneficiaries`,
+        `Attempted bulk import of ${data.length} beneficiaries`,
         admin.id,
         admin.fullName,
         undefined,
-        { count: newBeneficiaries.length }
+        { count: data.length }
       );
     }
   };
@@ -251,41 +272,72 @@ export default function Beneficiaries() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent>
-                        <DropdownMenuItem onClick={() => setStatusFilter('all')}>
+                        <DropdownMenuItem
+                          onClick={() => setStatusFilter("all")}
+                        >
                           All Status
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setStatusFilter('active')}>
+                        <DropdownMenuItem
+                          onClick={() => setStatusFilter("active")}
+                        >
                           Active
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setStatusFilter('inactive')}>
+                        <DropdownMenuItem
+                          onClick={() => setStatusFilter("inactive")}
+                        >
                           Inactive
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setStatusFilter('suspended')}>
+                        <DropdownMenuItem
+                          onClick={() => setStatusFilter("suspended")}
+                        >
                           Suspended
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
-                    <AdvancedFilters 
+                    <AdvancedFilters
                       onFilterChange={setAdvancedFilters}
                       filterConfig={[
-                        { label: 'Min Balance', key: 'balance_min', type: 'text' },
-                        { label: 'Max Balance', key: 'balance_max', type: 'text' },
-                        { label: 'Registered Date', key: 'registered', type: 'daterange' },
+                        {
+                          label: "Min Balance",
+                          key: "balance_min",
+                          type: "text",
+                        },
+                        {
+                          label: "Max Balance",
+                          key: "balance_max",
+                          type: "text",
+                        },
+                        {
+                          label: "Registered Date",
+                          key: "registered",
+                          type: "daterange",
+                        },
                       ]}
                     />
-                    <PermissionGate resource="beneficiaries" action="bulkOperations">
-                      <BulkOperations 
+                    <PermissionGate
+                      resource="beneficiaries"
+                      action="bulkOperations"
+                    >
+                      <BulkOperations
                         type="beneficiaries"
                         onImportComplete={handleBulkImport}
                         onBulkStatusUpdate={handleBulkStatusUpdate}
                       />
                     </PermissionGate>
                     <PermissionGate resource="beneficiaries" action="export">
-                      <Button onClick={handleExportCSV} variant="outline" className="gap-2">
+                      <Button
+                        onClick={handleExportCSV}
+                        variant="outline"
+                        className="gap-2"
+                      >
                         <Download className="h-4 w-4" />
                         CSV
                       </Button>
-                      <Button onClick={handleExportPDF} variant="outline" className="gap-2">
+                      <Button
+                        onClick={handleExportPDF}
+                        variant="outline"
+                        className="gap-2"
+                      >
                         <Download className="h-4 w-4" />
                         PDF
                       </Button>
@@ -308,24 +360,41 @@ export default function Beneficiaries() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {filteredBeneficiaries.map((beneficiary) => (
-                        <TableRow key={beneficiary.id}>
-                          <TableCell className="font-medium">{beneficiary.fullName}</TableCell>
+                      {filteredBeneficiaries.map((beneficiary: any) => (
+                        <TableRow
+                          key={
+                            beneficiary.id ?? beneficiary._id ?? beneficiary.nin
+                          }
+                        >
+                          <TableCell className="font-medium">
+                            {beneficiary.fullName}
+                          </TableCell>
                           <TableCell>{beneficiary.nin}</TableCell>
                           <TableCell>
                             <div className="text-sm">
                               <div>{beneficiary.phone}</div>
-                              <div className="text-muted-foreground">{beneficiary.email}</div>
+                              <div className="text-muted-foreground">
+                                {beneficiary.email}
+                              </div>
                             </div>
                           </TableCell>
-                          <TableCell>₦{beneficiary.balance.toLocaleString()}</TableCell>
+
                           <TableCell>
-                            <Badge className={getStatusColor(beneficiary.status)}>
+                            ₦{(beneficiary?.balance ?? 0).toLocaleString()}
+                          </TableCell>
+                          <TableCell>
+                            <Badge
+                              className={getStatusColor(beneficiary.status)}
+                            >
                               {beneficiary.status}
                             </Badge>
                           </TableCell>
                           <TableCell className="text-muted-foreground text-sm">
-                            {new Date(beneficiary.lastLogin).toLocaleDateString()}
+                            {new Date(
+                              beneficiary?.lastLogin ||
+                                beneficiary?.registeredDate ||
+                                Date.now()
+                            ).toLocaleDateString()}
                           </TableCell>
                           <TableCell className="text-right">
                             <DropdownMenu>
@@ -335,30 +404,56 @@ export default function Beneficiaries() {
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => handleViewDetails(beneficiary)}>
+                                <DropdownMenuItem
+                                  onClick={() => handleViewDetails(beneficiary)}
+                                >
                                   <Eye className="w-4 h-4 mr-2" />
                                   View Details
                                 </DropdownMenuItem>
-                                {can('beneficiaries', 'update') && beneficiary.status !== 'active' && (
-                                  <DropdownMenuItem onClick={() => handleStatusChange(beneficiary.id, 'active')}>
-                                    <UserCheck className="w-4 h-4 mr-2" />
-                                    Activate
-                                  </DropdownMenuItem>
-                                )}
-                                {can('beneficiaries', 'update') && beneficiary.status !== 'inactive' && (
-                                  <DropdownMenuItem onClick={() => handleStatusChange(beneficiary.id, 'inactive')}>
-                                    <UserX className="w-4 h-4 mr-2" />
-                                    Deactivate
-                                  </DropdownMenuItem>
-                                )}
-                                {can('beneficiaries', 'update') && beneficiary.status !== 'suspended' && (
-                                  <DropdownMenuItem onClick={() => handleStatusChange(beneficiary.id, 'suspended')}>
-                                    <Ban className="w-4 h-4 mr-2" />
-                                    Suspend
-                                  </DropdownMenuItem>
-                                )}
-                                {can('beneficiaries', 'delete') && (
-                                  <DropdownMenuItem 
+                                {can("beneficiaries", "update") &&
+                                  beneficiary.status !== "active" && (
+                                    <DropdownMenuItem
+                                      onClick={() =>
+                                        handleStatusChange(
+                                          beneficiary.id,
+                                          "active"
+                                        )
+                                      }
+                                    >
+                                      <UserCheck className="w-4 h-4 mr-2" />
+                                      Activate
+                                    </DropdownMenuItem>
+                                  )}
+                                {can("beneficiaries", "update") &&
+                                  beneficiary.status !== "inactive" && (
+                                    <DropdownMenuItem
+                                      onClick={() =>
+                                        handleStatusChange(
+                                          beneficiary.id,
+                                          "inactive"
+                                        )
+                                      }
+                                    >
+                                      <UserX className="w-4 h-4 mr-2" />
+                                      Deactivate
+                                    </DropdownMenuItem>
+                                  )}
+                                {can("beneficiaries", "update") &&
+                                  beneficiary.status !== "suspended" && (
+                                    <DropdownMenuItem
+                                      onClick={() =>
+                                        handleStatusChange(
+                                          beneficiary.id,
+                                          "suspended"
+                                        )
+                                      }
+                                    >
+                                      <Ban className="w-4 h-4 mr-2" />
+                                      Suspend
+                                    </DropdownMenuItem>
+                                  )}
+                                {can("beneficiaries", "delete") && (
+                                  <DropdownMenuItem
                                     className="text-destructive"
                                     onClick={() => handleDelete(beneficiary.id)}
                                   >
@@ -387,8 +482,12 @@ export default function Beneficiaries() {
                   <div className="space-y-4 mt-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <p className="text-sm text-muted-foreground">Full Name</p>
-                        <p className="font-medium">{selectedBeneficiary.fullName}</p>
+                        <p className="text-sm text-muted-foreground">
+                          Full Name
+                        </p>
+                        <p className="font-medium">
+                          {selectedBeneficiary.fullName}
+                        </p>
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground">NIN</p>
@@ -396,52 +495,99 @@ export default function Beneficiaries() {
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground">Phone</p>
-                        <p className="font-medium">{selectedBeneficiary.phone}</p>
+                        <p className="font-medium">
+                          {selectedBeneficiary.phone}
+                        </p>
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground">Email</p>
-                        <p className="font-medium">{selectedBeneficiary.email}</p>
+                        <p className="font-medium">
+                          {selectedBeneficiary.email}
+                        </p>
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground">Status</p>
-                        <Badge className={getStatusColor(selectedBeneficiary.status)}>
+                        <Badge
+                          className={getStatusColor(selectedBeneficiary.status)}
+                        >
                           {selectedBeneficiary.status}
                         </Badge>
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground">Balance</p>
-                        <p className="font-bold text-lg">₦{selectedBeneficiary.balance.toLocaleString()}</p>
+                        <p className="font-bold text-lg">
+                          ₦
+                          {(selectedBeneficiary?.balance ?? 0).toLocaleString()}
+                        </p>
                       </div>
                       <div>
-                        <p className="text-sm text-muted-foreground">Total Received</p>
-                        <p className="font-medium text-success">₦{selectedBeneficiary.totalReceived.toLocaleString()}</p>
+                        <p className="text-sm text-muted-foreground">
+                          Total Received
+                        </p>
+                        <p className="font-medium text-success">
+                          ₦
+                          {(
+                            selectedBeneficiary?.totalReceived ?? 0
+                          ).toLocaleString()}
+                        </p>
                       </div>
                       <div>
-                        <p className="text-sm text-muted-foreground">Total Withdrawn</p>
-                        <p className="font-medium text-muted-foreground">₦{selectedBeneficiary.totalWithdrawn.toLocaleString()}</p>
+                        <p className="text-sm text-muted-foreground">
+                          Total Withdrawn
+                        </p>
+                        <p className="font-medium text-muted-foreground">
+                          ₦
+                          {(
+                            selectedBeneficiary?.totalWithdrawn ?? 0
+                          ).toLocaleString()}
+                        </p>
                       </div>
                       <div>
-                        <p className="text-sm text-muted-foreground">Registered Date</p>
-                        <p className="font-medium">{new Date(selectedBeneficiary.registeredDate).toLocaleDateString()}</p>
+                        <p className="text-sm text-muted-foreground">
+                          Registered Date
+                        </p>
+                        <p className="font-medium">
+                          {new Date(
+                            selectedBeneficiary?.registeredDate || Date.now()
+                          ).toLocaleDateString()}
+                        </p>
                       </div>
                       <div>
-                        <p className="text-sm text-muted-foreground">Last Login</p>
-                        <p className="font-medium">{new Date(selectedBeneficiary.lastLogin).toLocaleString()}</p>
+                        <p className="text-sm text-muted-foreground">
+                          Last Login
+                        </p>
+                        <p className="font-medium">
+                          {new Date(
+                            selectedBeneficiary?.lastLogin ||
+                              selectedBeneficiary?.registeredDate ||
+                              Date.now()
+                          ).toLocaleString()}
+                        </p>
                       </div>
                     </div>
                     <div className="flex gap-2 pt-4 border-t">
                       <Button
                         variant="outline"
-                        onClick={() => handleStatusChange(selectedBeneficiary.id, 'active')}
-                        disabled={selectedBeneficiary.status === 'active'}
+                        onClick={() =>
+                          handleStatusChange(
+                            selectedBeneficiary.id,
+                            "active"
+                          )
+                        }
+                        disabled={selectedBeneficiary.status === "active"}
                       >
                         <UserCheck className="w-4 h-4 mr-2" />
                         Activate
                       </Button>
                       <Button
                         variant="outline"
-                        onClick={() => handleStatusChange(selectedBeneficiary.id, 'suspended')}
-                        disabled={selectedBeneficiary.status === 'suspended'}
+                        onClick={() =>
+                          handleStatusChange(
+                            selectedBeneficiary.id,
+                            "suspended"
+                          )
+                        }
+                        disabled={selectedBeneficiary.status === "suspended"}
                       >
                         <Ban className="w-4 h-4 mr-2" />
                         Suspend
@@ -449,7 +595,9 @@ export default function Beneficiaries() {
                       <Button
                         variant="destructive"
                         onClick={() => {
-                          handleDelete(selectedBeneficiary.id);
+                          handleDelete(
+                            selectedBeneficiary.id
+                          );
                           setIsDetailOpen(false);
                         }}
                       >

@@ -33,6 +33,58 @@ export interface AdminFeedback {
   priority: 'high' | 'medium' | 'low';
 }
 
+export interface Poll {
+  id: string;
+  title: string;
+  description: string;
+  options: PollOption[];
+  status: "active" | "closed" | "upcoming";
+  startDate: string;
+  endDate: string;
+  category: string;
+  totalVotes: number;
+  createdBy: string;
+}
+
+
+export interface PollOption {
+  id: string;
+  text: string;
+  votes: number;
+}
+
+export interface NINRecord {
+  id: string;
+  nin: string;
+  fullName: string;
+  dateOfBirth: string;
+  gender: "male" | "female";
+  phone: string;
+  email: string;
+  address: string;
+  state: string;
+  lga: string;
+  registeredDate: string;
+  isLinked: boolean;
+  linkedUserId?: string;
+  isVerified: boolean;
+  status: "active" | "inactive" | "suspended";
+}
+
+export interface AdminNotification {
+  id: string;
+  title: string;
+  message: string;
+  type: "info" | "warning" | "success" | "error";
+  date: string;
+  read: boolean;
+  actionUrl?: string;
+}
+
+
+
+
+
 export const mockBeneficiaries: Beneficiary[] = [
   {
     id: 'BEN001',
@@ -131,49 +183,6 @@ export const mockDisbursements: DisbursementRecord[] = [
   },
 ];
 
-export const mockAdminFeedback: AdminFeedback[] = [
-  {
-    id: 'FB001',
-    userId: 'BEN001',
-    userName: 'Adebayo Johnson',
-    category: 'technical',
-    message: 'I am unable to withdraw funds. The system shows an error when I try.',
-    date: '2025-03-14T14:30:00',
-    status: 'pending',
-    priority: 'high',
-  },
-  {
-    id: 'FB002',
-    userId: 'BEN002',
-    userName: 'Fatima Ibrahim',
-    category: 'suggestion',
-    message: 'It would be great to have mobile app support for easier access.',
-    date: '2025-03-13T10:15:00',
-    status: 'reviewed',
-    priority: 'medium',
-  },
-  {
-    id: 'FB003',
-    userId: 'BEN003',
-    userName: 'Chukwudi Okonkwo',
-    category: 'complaint',
-    message: 'Disbursement was delayed this month. Please improve the timeline.',
-    date: '2025-03-12T16:45:00',
-    status: 'resolved',
-    priority: 'medium',
-  },
-  {
-    id: 'FB004',
-    userId: 'BEN004',
-    userName: 'Blessing Udoh',
-    category: 'inquiry',
-    message: 'How can I update my phone number on my profile?',
-    date: '2025-03-11T09:20:00',
-    status: 'resolved',
-    priority: 'low',
-  },
-];
-
 export const mockAdminStats = {
   totalUsers: 15432,
   activeUsers: 12890,
@@ -207,156 +216,6 @@ export const mockAnalyticsData = {
     { status: 'Suspended', count: 542 },
   ],
 };
-
-export interface Poll {
-  id: string;
-  title: string;
-  description: string;
-  options: PollOption[];
-  status: 'active' | 'closed' | 'upcoming';
-  startDate: string;
-  endDate: string;
-  category: string;
-  totalVotes: number;
-  createdBy: string;
-}
-
-export interface PollOption {
-  id: string;
-  text: string;
-  votes: number;
-}
-
-export const mockPolls: Poll[] = [
-  {
-    id: 'POLL001',
-    title: 'Preferred Disbursement Schedule',
-    description: 'Help us determine the best time for monthly disbursements',
-    options: [
-      { id: 'OPT1', text: 'First week of the month', votes: 1250 },
-      { id: 'OPT2', text: 'Second week of the month', votes: 890 },
-      { id: 'OPT3', text: 'Third week of the month', votes: 450 },
-      { id: 'OPT4', text: 'Last week of the month', votes: 320 },
-    ],
-    status: 'active',
-    startDate: '2025-03-01T00:00:00',
-    endDate: '2025-03-31T23:59:59',
-    category: 'Disbursement',
-    totalVotes: 2910,
-    createdBy: 'Admin User',
-  },
-  {
-    id: 'POLL002',
-    title: 'Most Needed Financial Support Area',
-    description: 'Which sector needs the most financial assistance?',
-    options: [
-      { id: 'OPT1', text: 'Agriculture & Farming', votes: 2100 },
-      { id: 'OPT2', text: 'Education & Training', votes: 1800 },
-      { id: 'OPT3', text: 'Healthcare', votes: 1500 },
-      { id: 'OPT4', text: 'Small Business Support', votes: 1200 },
-    ],
-    status: 'active',
-    startDate: '2025-03-10T00:00:00',
-    endDate: '2025-04-10T23:59:59',
-    category: 'Policy',
-    totalVotes: 6600,
-    createdBy: 'Admin User',
-  },
-  {
-    id: 'POLL003',
-    title: 'Mobile App Priority Features',
-    description: 'What features would you like to see in our mobile app?',
-    options: [
-      { id: 'OPT1', text: 'Offline transaction history', votes: 450 },
-      { id: 'OPT2', text: 'Fingerprint authentication', votes: 680 },
-      { id: 'OPT3', text: 'SMS notifications', votes: 320 },
-      { id: 'OPT4', text: 'Voice assistance', votes: 290 },
-    ],
-    status: 'closed',
-    startDate: '2025-02-01T00:00:00',
-    endDate: '2025-02-28T23:59:59',
-    category: 'Technology',
-    totalVotes: 1740,
-    createdBy: 'Admin User',
-  },
-];
-
-export interface NINRecord {
-  id: string;
-  nin: string;
-  fullName: string;
-  dateOfBirth: string;
-  gender: 'male' | 'female';
-  phone: string;
-  email: string;
-  address: string;
-  state: string;
-  lga: string;
-  registeredDate: string;
-  isLinked: boolean;
-  linkedUserId?: string;
-  status: 'active' | 'inactive' | 'suspended';
-}
-
-export const mockNINRecords: NINRecord[] = [
-  {
-    id: 'NIN001',
-    nin: '12345678901',
-    fullName: 'Adebayo Johnson',
-    dateOfBirth: '1985-05-15',
-    gender: 'male',
-    phone: '+234 801 234 5678',
-    email: 'adebayo@example.com',
-    address: '123 Main Street, Ikeja',
-    state: 'Lagos',
-    lga: 'Ikeja',
-    registeredDate: '2024-01-10',
-    isLinked: true,
-    linkedUserId: 'BEN001',
-    status: 'active',
-  },
-  {
-    id: 'NIN002',
-    nin: '98765432109',
-    fullName: 'Fatima Ibrahim',
-    dateOfBirth: '1990-08-22',
-    gender: 'female',
-    phone: '+234 802 345 6789',
-    email: 'fatima@example.com',
-    address: '45 River Road, Kano',
-    state: 'Kano',
-    lga: 'Kano Municipal',
-    registeredDate: '2024-02-15',
-    isLinked: true,
-    linkedUserId: 'BEN002',
-    status: 'active',
-  },
-  {
-    id: 'NIN003',
-    nin: '55443322110',
-    fullName: 'Emeka Okafor',
-    dateOfBirth: '1988-12-30',
-    gender: 'male',
-    phone: '+234 803 456 7890',
-    email: 'emeka@example.com',
-    address: '78 Market Square, Enugu',
-    state: 'Enugu',
-    lga: 'Enugu North',
-    registeredDate: '2024-03-01',
-    isLinked: false,
-    status: 'active',
-  },
-];
-
-export interface AdminNotification {
-  id: string;
-  title: string;
-  message: string;
-  type: 'info' | 'warning' | 'success' | 'error';
-  date: string;
-  read: boolean;
-  actionUrl?: string;
-}
 
 export const mockAdminNotifications: AdminNotification[] = [
   {

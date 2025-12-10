@@ -12,33 +12,33 @@ const Landing = () => {
   const features = [
     {
       icon: Shield,
-      title: 'Secure & Safe',
-      description: 'Bank-level security with government backing ensures your money is always protected.',
+      title: t('feature.secure.title'),
+      description: t('feature.secure.description'),
     },
     {
       icon: Wallet,
-      title: 'Easy Payments',
-      description: 'Send and receive money instantly with just a few taps on your phone.',
+      title: t('feature.payments.title'),
+      description: t('feature.payments.description'),
     },
     {
       icon: Users,
-      title: 'Community First',
-      description: 'Built specifically for rural communities with local language support.',
+      title: t('feature.community.title'),
+      description: t('feature.community.description'),
     },
     {
       icon: TrendingUp,
-      title: 'Financial Growth',
-      description: 'Access government disbursements and grow your financial independence.',
+      title: t('feature.growth.title'),
+      description: t('feature.growth.description'),
     },
   ];
 
   const benefits = [
-    'No minimum balance required',
-    'Free registration with NIN',
-    'Instant government disbursements',
-    'Support in local languages',
-    'Works on any mobile device',
-    '24/7 customer support',
+    'benefit.noMinBalance',
+    'benefit.freeRegistration',
+    'benefit.instantDisbursements',
+    'benefit.localLanguageSupport',
+    'benefit.anyDevice',
+    'benefit.support247',
   ];
 
   const testimonials = [
@@ -96,14 +96,12 @@ const Landing = () => {
               className="space-y-6"
             >
               <div className="inline-block px-4 py-2 bg-primary/10 rounded-full text-primary text-sm font-medium">
-                Government Initiative
+                {t('governmentInitiativeBadge')}
               </div>
               <h1 className="text-4xl md:text-6xl font-bold leading-tight">
                 {t('tagline')}
               </h1>
-              <p className="text-lg text-muted-foreground">
-                Join thousands of Nigerians accessing secure digital payments, government disbursements, and financial services - all from your mobile device.
-              </p>
+              <p className="text-lg text-muted-foreground">{t('landingIntro')}</p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link to="/register">
                   <Button size="lg" className="w-full sm:w-auto group">
@@ -120,17 +118,17 @@ const Landing = () => {
               <div className="flex items-center space-x-6 pt-4">
                 <div>
                   <div className="text-2xl font-bold text-primary">50K+</div>
-                  <div className="text-sm text-muted-foreground">Active Users</div>
+                  <div className="text-sm text-muted-foreground">{t('activeUsers')}</div>
                 </div>
                 <div className="h-12 w-px bg-border"></div>
                 <div>
                   <div className="text-2xl font-bold text-primary">₦2.5B+</div>
-                  <div className="text-sm text-muted-foreground">Disbursed</div>
+                  <div className="text-sm text-muted-foreground">{t('disbursed')}</div>
                 </div>
                 <div className="h-12 w-px bg-border"></div>
                 <div>
                   <div className="text-2xl font-bold text-primary">99.9%</div>
-                  <div className="text-sm text-muted-foreground">Uptime</div>
+                  <div className="text-sm text-muted-foreground">{t('uptime')}</div>
                 </div>
               </div>
             </motion.div>
@@ -152,8 +150,8 @@ const Landing = () => {
                     <CheckCircle className="w-6 h-6 text-success" />
                   </div>
                   <div>
-                    <div className="font-semibold">Government Backed</div>
-                    <div className="text-sm text-muted-foreground">100% Secure</div>
+                    <div className="font-semibold">{t('governmentBacked')}</div>
+                    <div className="text-sm text-muted-foreground">{t('secureGuarantee')}</div>
                   </div>
                 </div>
               </div>
@@ -176,13 +174,13 @@ const Landing = () => {
               variants={itemVariants}
               className="text-3xl md:text-4xl font-bold mb-4"
             >
-              Why Choose DPI?
+              {t('whyChooseDPI')}
             </motion.h2>
             <motion.p
               variants={itemVariants}
               className="text-lg text-muted-foreground max-w-2xl mx-auto"
             >
-              Built by Nigerians, for Nigerians. DPI provides secure, accessible digital payment solutions for everyone.
+              {t('whyChooseDescription')}
             </motion.p>
           </motion.div>
 
@@ -220,9 +218,7 @@ const Landing = () => {
               viewport={{ once: true }}
               transition={{ duration: 0.8 }}
             >
-              <h2 className="text-3xl md:text-4xl font-bold mb-6">
-                Everything You Need for Financial Freedom
-              </h2>
+              <h2 className="text-3xl md:text-4xl font-bold mb-6">{t('benefitsTitle')}</h2>
               <div className="space-y-4">
                 {benefits.map((benefit, index) => (
                   <motion.div
@@ -280,12 +276,8 @@ const Landing = () => {
             transition={{ duration: 0.8 }}
             className="text-center mb-16"
           >
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Trusted by Communities Across Nigeria
-            </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              See what our users have to say about their DPI experience
-            </p>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">{t('testimonialsTitle')}</h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">{t('testimonialsSubtitle')}</p>
           </motion.div>
 
           <div className="grid md:grid-cols-3 gap-6">
@@ -327,12 +319,8 @@ const Landing = () => {
             transition={{ duration: 0.8 }}
             className="max-w-3xl mx-auto space-y-6"
           >
-            <h2 className="text-3xl md:text-5xl font-bold">
-              Ready to Get Started?
-            </h2>
-            <p className="text-xl opacity-90">
-              Join thousands of Nigerians already using DPI for secure, convenient digital payments
-            </p>
+            <h2 className="text-3xl md:text-5xl font-bold">{t('ctaTitle')}</h2>
+            <p className="text-xl opacity-90">{t('ctaDescription')}</p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link to="/register">
                 <Button
@@ -340,7 +328,7 @@ const Landing = () => {
                   variant="secondary"
                   className="w-full sm:w-auto group"
                 >
-                  Create Free Account
+                  {t('createFreeAccount')}
                   <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
@@ -350,7 +338,7 @@ const Landing = () => {
                   variant="outline"
                   className="w-full sm:w-auto bg-transparent border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary"
                 >
-                  Sign In
+                  {t('signIn')}
                 </Button>
               </Link>
             </div>

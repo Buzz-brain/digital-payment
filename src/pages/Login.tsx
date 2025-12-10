@@ -10,6 +10,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useAuthStore } from '@/store/authStore';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
+import i18n from '@/i18n/config';
+import { speakText } from '@/utils/speakText';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -38,7 +40,10 @@ const Login = () => {
 
     // allow either NIN (11 digits) or username
     if (!formData.identifier || formData.identifier.trim().length === 0) {
-      toast({ title: 'Missing identifier', description: 'Enter your NIN or username', variant: 'destructive' });
+      const title = t('missingIdentifierTitle');
+      const desc = t('missingIdentifierDesc');
+      toast({ title, description: desc, variant: 'destructive' });
+      speakText(`${title}. ${desc}`, i18n.language);
       return;
     }
 
@@ -48,15 +53,23 @@ const Login = () => {
       setLoading(false);
 
       if (success) {
-        toast({ title: 'Welcome Back!', description: 'Login successful' });
+        const title = t('welcomeBackTitle');
+        const desc = t('loginSuccessDesc');
+        toast({ title, description: desc });
+        speakText(`${title}. ${desc}`, i18n.language);
         navigate('/dashboard');
       } else {
-        toast({ title: 'Login Failed', description: 'Invalid credentials', variant: 'destructive' });
+        const title = t('loginFailedTitle');
+        const desc = t('loginFailedDesc');
+        toast({ title, description: desc, variant: 'destructive' });
+        speakText(`${title}. ${desc}`, i18n.language);
       }
     } catch (err: any) {
       setLoading(false);
       const message = err?.message || 'Server error';
-      toast({ title: 'Login Failed', description: message, variant: 'destructive' });
+      const title = t('loginFailedTitle');
+      toast({ title, description: message, variant: 'destructive' });
+      speakText(`${title}. ${message}`, i18n.language);
     }
   };
 
@@ -79,23 +92,23 @@ const Login = () => {
               </Link>
             </div>
             <CardDescription>
-              Enter your credentials to access your DPI account
+              {t('loginDescription')}
             </CardDescription>
           </CardHeader>
           
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="identifier">NIN or Username</Label>
+                <Label htmlFor="identifier">{t('identifierLabel')}</Label>
                 <Input
                   id="identifier"
                   name="identifier"
-                  placeholder="12345678901 or username"
+                  placeholder={t('identifierPlaceholder')}
                   value={formData.identifier}
                   onChange={handleInputChange}
                   required
                 />
-                <p className="text-xs text-muted-foreground">Enter your 11-digit NIN or your username</p>
+                <p className="text-xs text-muted-foreground">{t('identifierHelp')}</p>
               </div>
 
               <div className="space-y-2">
@@ -113,7 +126,7 @@ const Login = () => {
                     id="password"
                     name="password"
                     type={showPassword ? 'text' : 'password'}
-                    placeholder="Enter your password"
+                    placeholder={t('passwordPlaceholder')}
                     value={formData.password}
                     onChange={handleInputChange}
                     required
@@ -156,7 +169,7 @@ const Login = () => {
 
             {/* Demo Credentials */}
             <div className="mt-6 p-4 bg-muted/50 rounded-lg border border-border">
-              <p className="text-xs font-medium mb-2">Demo Credentials:</p>
+              <p className="text-xs font-medium mb-2">{t('demoCredentialsTitle')}</p>
               <p className="text-xs text-muted-foreground">NIN: 12345678901</p>
               <p className="text-xs text-muted-foreground">Password: password123</p>
             </div>
@@ -164,7 +177,7 @@ const Login = () => {
         </Card>
 
         <p className="mt-6 text-center text-sm text-muted-foreground">
-          Secured by the Federal Government of Nigeria
+          {t('securedByGovernment')}
         </p>
       </motion.div>
     </div>

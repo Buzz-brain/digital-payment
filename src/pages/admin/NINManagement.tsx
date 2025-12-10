@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, Search, Filter, Edit, Trash2, UserCheck, MoreVertical, Download } from 'lucide-react';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
@@ -12,19 +12,16 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { mockNINRecords, NINRecord } from '@/data/mockAdminData';
+import { NINRecord } from '@/data/mockAdminData';
+import { apiGet, apiPost, apiPut, apiDelete } from '@/lib/api';
 import { toast } from '@/hooks/use-toast';
 import { exportToCSV, exportToPDF, formatDate } from '@/lib/exportUtils';
 import { auditLogger } from '@/lib/auditLog';
 import { useAdminStore } from '@/store/adminStore';
-import { BulkOperations } from '@/components/admin/BulkOperations';
-import { PermissionGate } from '@/components/admin/PermissionGate';
-import { usePermissions } from '@/hooks/usePermissions';
 
 export default function NINManagement() {
   const { admin } = useAdminStore();
-  const { can } = usePermissions();
-  const [records, setRecords] = useState(mockNINRecords);
+  const [records, setRecords] = useState<NINRecord[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -53,64 +50,92 @@ export default function NINManagement() {
   const handleCreateOrUpdate = () => {
     if (!formData.nin || !formData.fullName || !formData.phone) {
       toast({
-        title: 'Error',
-        description: 'Please fill all required fields',
+        title: 'Validation Error',
+        description: 'Please fill in all required fields (NIN, Full Name, Phone)',
         variant: 'destructive',
       });
       return;
     }
 
-    if (editingRecord) {
-      setRecords(records.map(r => 
-        r.id === editingRecord.id 
-          ? { ...r, ...formData }
-          : r
-      ));
-      
-      if (admin) {
-        auditLogger.log(
-          'nin_updated',
-          'NIN',
-          `Updated NIN record for ${formData.fullName}`,
-          admin.id,
-          admin.fullName,
-          editingRecord.id
-        );
-      }
-      
-      toast({
-        title: 'NIN Updated',
-        description: 'NIN record has been updated successfully',
-      });
-    } else {
-      const newRecord: NINRecord = {
-        id: `NIN${String(records.length + 1).padStart(3, '0')}`,
-        ...formData,
-        registeredDate: new Date().toISOString().split('T')[0],
-        isLinked: false,
-        status: 'active',
-      };
-      setRecords([newRecord, ...records]);
-      
-      if (admin) {
-        auditLogger.log(
-          'nin_created',
-          'NIN',
-          `Created new NIN record for ${formData.fullName}`,
-          admin.id,
-          admin.fullName,
-          newRecord.id
-        );
-      }
-      
-      toast({
-        title: 'NIN Registered',
-        description: 'New NIN has been registered successfully',
-      });
-    }
+    (async () => {
+      try {
+        if (editingRecord) {
+          // Update via API (use NIN as identifier)
+          const payload = { ...formData };
+          const updated: any = await apiPut(`/api/nininfo/${encodeURIComponent(formData.nin)}`, payload);
+          // reflect in local state (match by nin)
+          setRecords((prev) => prev.map(r => (r.nin === updated.nin ? { ...r, ...updated } : r)));
 
-    resetForm();
+          if (admin) {
+            auditLogger.log('nin_updated', 'NIN', `Updated NIN record for ${formData.fullName}`, admin.id, admin.fullName, formData.nin);
+          }
+
+          toast({ title: 'NIN Updated', description: 'NIN record has been updated successfully' });
+        } else {
+          // Create via API
+          const payload = { ...formData };
+          const created: any = await apiPost('/api/nininfo', payload);
+          const newRecord: NINRecord = {
+            id: `NIN${String(records.length + 1).padStart(3, '0')}`,
+            nin: created.nin,
+            fullName: created.fullName,
+            dateOfBirth: created.dob ? created.dob.split('T')[0] : formData.dateOfBirth,
+            gender: created.gender || formData.gender,
+            phone: created.phone,
+            email: created.email || '',
+            address: created.address || '',
+            state: created.state || '',
+            lga: created.lga || '',
+            registeredDate: new Date().toISOString().split('T')[0],
+            isLinked: false,
+            isVerified: false,
+            status: 'active',
+          };
+          setRecords((prev) => [newRecord, ...prev]);
+
+          if (admin) {
+            auditLogger.log('nin_created', 'NIN', `Created new NIN record for ${formData.fullName}`, admin.id, admin.fullName, created.nin);
+          }
+
+          toast({ title: 'NIN Registered', description: 'New NIN has been registered successfully' });
+        }
+        resetForm();
+      } catch (err: any) {
+        toast({ title: 'Error', description: err.message || 'Failed to save NIN record', variant: 'destructive' });
+      }
+    })();
   };
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const data: any[] = await apiGet('/api/nininfo');
+        if (!mounted) return;
+        const mapped: NINRecord[] = data.map((d, idx) => ({
+          id: d._id || `NIN${String(idx + 1).padStart(3, '0')}`,
+          nin: d.nin,
+          fullName: d.fullName || '',
+          dateOfBirth: d.dob ? (d.dob.split ? d.dob.split('T')[0] : String(d.dob)) : '',
+          gender: (d.gender === 'female' ? 'female' : 'male'),
+          phone: d.phone || '',
+          email: d.email || '',
+          address: d.address || '',
+          state: d.state || '',
+          lga: d.lga || '',
+          registeredDate: d.createdAt ? (d.createdAt.split ? d.createdAt.split('T')[0] : String(d.createdAt)) : new Date().toISOString().split('T')[0],
+          isLinked: !!d.linkedUserId,
+          linkedUserId: d.linkedUserId,
+          isVerified: !!d.isVerified,
+          status: 'active',
+        }));
+        setRecords(mapped);
+      } catch (err: any) {
+        toast({ title: 'Error', description: err.message || 'Failed to fetch NIN records', variant: 'destructive' });
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
 
   const resetForm = () => {
     setFormData({
@@ -145,24 +170,20 @@ export default function NINManagement() {
   };
 
   const handleDelete = (id: string) => {
-    const record = records.find(r => r.id === id);
-    setRecords(records.filter(r => r.id !== id));
-    
-    if (admin && record) {
-      auditLogger.log(
-        'nin_deleted',
-        'NIN',
-        `Deleted NIN record for ${record.fullName}`,
-        admin.id,
-        admin.fullName,
-        id
-      );
-    }
-    
-    toast({
-      title: 'NIN Deleted',
-      description: 'NIN record has been removed',
-    });
+    (async () => {
+      try {
+        const record = records.find(r => r.id === id);
+        if (!record) throw new Error('Record not found');
+        await apiDelete(`/api/nininfo/${encodeURIComponent(record.nin)}`);
+        setRecords((prev) => prev.filter(r => r.id !== id));
+        if (admin && record) {
+          auditLogger.log('nin_deleted', 'NIN', `Deleted NIN record for ${record.fullName}`, admin.id, admin.fullName, record.nin);
+        }
+        toast({ title: 'NIN Deleted', description: 'NIN record has been removed' });
+      } catch (err: any) {
+        toast({ title: 'Error', description: err.message || 'Failed to delete NIN', variant: 'destructive' });
+      }
+    })();
   };
 
   const handleToggleStatus = (id: string) => {
@@ -175,6 +196,40 @@ export default function NINManagement() {
       title: 'Status Updated',
       description: 'NIN status has been changed',
     });
+  };
+
+  const handleVerify = (id: string) => {
+    (async () => {
+      try {
+        const record = records.find(r => r.id === id);
+        if (!record) throw new Error('Record not found');
+        
+        // Call verify endpoint with NIN
+        await apiPost('/api/nin/verify', { nin: record.nin });
+        
+        // Update local state
+        setRecords((prev) => prev.map(r => 
+          r.id === id 
+            ? { ...r, isVerified: true }
+            : r
+        ));
+        
+        if (admin) {
+          auditLogger.log('nin_verified', 'NIN', `Verified NIN for ${record.fullName}`, admin.id, admin.fullName, record.nin);
+        }
+        
+        toast({
+          title: 'NIN Verified',
+          description: `NIN for ${record.fullName} has been verified successfully`,
+        });
+      } catch (err: any) {
+        toast({
+          title: 'Error',
+          description: err.message || 'Failed to verify NIN',
+          variant: 'destructive',
+        });
+      }
+    })();
   };
 
   const handleExportCSV = () => {
@@ -210,26 +265,6 @@ export default function NINManagement() {
       'NIN Records Report',
       `Generated on ${new Date().toLocaleDateString()}`
     );
-  };
-
-  const handleBulkImport = (data: any[]) => {
-    const newRecords = data.map((item, index) => ({
-      id: `NIN${String(records.length + index + 1).padStart(3, '0')}`,
-      nin: item.NIN || item.nin,
-      fullName: item['Full Name'] || item.fullName,
-      dateOfBirth: item['Date of Birth'] || item.dateOfBirth || '',
-      gender: (item.Gender || item.gender || 'male') as 'male' | 'female',
-      phone: item.Phone || item.phone,
-      email: item.Email || item.email || '',
-      address: item.Address || item.address || '',
-      state: item.State || item.state,
-      lga: item.LGA || item.lga,
-      registeredDate: new Date().toISOString().split('T')[0],
-      isLinked: false,
-      status: 'active' as 'active' | 'suspended',
-    }));
-    
-    setRecords([...records, ...newRecords]);
   };
 
   const getStatusColor = (status: string) => {
@@ -291,136 +326,14 @@ export default function NINManagement() {
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
-                    <PermissionGate resource="nin" action="bulkOperations">
-                      <BulkOperations 
-                        type="nin"
-                        onImportComplete={handleBulkImport}
-                      />
-                    </PermissionGate>
-                    <PermissionGate resource="nin" action="export">
-                      <Button onClick={handleExportCSV} variant="outline" className="gap-2">
-                        <Download className="h-4 w-4" />
-                        CSV
-                      </Button>
-                      <Button onClick={handleExportPDF} variant="outline" className="gap-2">
-                        <Download className="h-4 w-4" />
-                        PDF
-                      </Button>
-                    </PermissionGate>
-                    <PermissionGate resource="nin" action="create">
-                      <Dialog open={isCreateOpen} onOpenChange={(open) => {
-                        setIsCreateOpen(open);
-                        if (!open) resetForm();
-                      }}>
-                        <DialogTrigger asChild>
-                          <Button>
-                            <Plus className="w-4 h-4 mr-2" />
-                            Register NIN
-                          </Button>
-                        </DialogTrigger>
-                      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                        <DialogHeader>
-                          <DialogTitle>
-                            {editingRecord ? 'Edit NIN Record' : 'Register New NIN'}
-                          </DialogTitle>
-                        </DialogHeader>
-                        <div className="grid grid-cols-2 gap-4 mt-4">
-                          <div>
-                            <Label htmlFor="nin">NIN *</Label>
-                            <Input
-                              id="nin"
-                              value={formData.nin}
-                              onChange={(e) => setFormData({ ...formData, nin: e.target.value })}
-                              placeholder="11 digit NIN"
-                              maxLength={11}
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="fullName">Full Name *</Label>
-                            <Input
-                              id="fullName"
-                              value={formData.fullName}
-                              onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                              placeholder="Enter full name"
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="dateOfBirth">Date of Birth</Label>
-                            <Input
-                              id="dateOfBirth"
-                              type="date"
-                              value={formData.dateOfBirth}
-                              onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="gender">Gender</Label>
-                            <Select
-                              value={formData.gender}
-                              onValueChange={(value: 'male' | 'female') => setFormData({ ...formData, gender: value })}
-                            >
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="male">Male</SelectItem>
-                                <SelectItem value="female">Female</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div>
-                            <Label htmlFor="phone">Phone *</Label>
-                            <Input
-                              id="phone"
-                              value={formData.phone}
-                              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                              placeholder="+234 XXX XXX XXXX"
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="email">Email</Label>
-                            <Input
-                              id="email"
-                              type="email"
-                              value={formData.email}
-                              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                              placeholder="email@example.com"
-                            />
-                          </div>
-                          <div className="col-span-2">
-                            <Label htmlFor="address">Address</Label>
-                            <Input
-                              id="address"
-                              value={formData.address}
-                              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                              placeholder="Enter address"
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="state">State</Label>
-                            <Input
-                              id="state"
-                              value={formData.state}
-                              onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                              placeholder="Enter state"
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="lga">LGA</Label>
-                            <Input
-                              id="lga"
-                              value={formData.lga}
-                              onChange={(e) => setFormData({ ...formData, lga: e.target.value })}
-                              placeholder="Enter LGA"
-                            />
-                          </div>
-                        </div>
-                        <Button onClick={handleCreateOrUpdate} className="w-full mt-4">
-                          {editingRecord ? 'Update NIN' : 'Register NIN'}
-                        </Button>
-                      </DialogContent>
-                    </Dialog>
-                    </PermissionGate>
+                    <Button onClick={handleExportCSV} variant="outline" className="gap-2">
+                      <Download className="h-4 w-4" />
+                      CSV
+                    </Button>
+                    <Button onClick={handleExportPDF} variant="outline" className="gap-2">
+                      <Download className="h-4 w-4" />
+                      PDF
+                    </Button>
                   </div>
                 </div>
               </CardHeader>
@@ -434,7 +347,7 @@ export default function NINManagement() {
                         <TableHead>Contact</TableHead>
                         <TableHead>Location</TableHead>
                         <TableHead>Status</TableHead>
-                        <TableHead>Linked</TableHead>
+                        <TableHead>Verified</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -461,13 +374,13 @@ export default function NINManagement() {
                             </Badge>
                           </TableCell>
                           <TableCell>
-                            {record.isLinked ? (
+                            {record.isVerified ? (
                               <Badge className="bg-success/10 text-success">
                                 <UserCheck className="w-3 h-3 mr-1" />
-                                Linked
+                                Verified
                               </Badge>
                             ) : (
-                              <Badge variant="outline">Not Linked</Badge>
+                              <Badge variant="outline">Not Verified</Badge>
                             )}
                           </TableCell>
                           <TableCell className="text-right">
@@ -478,27 +391,27 @@ export default function NINManagement() {
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
-                                {can('nin', 'update') && (
-                                  <DropdownMenuItem onClick={() => handleEdit(record)}>
-                                    <Edit className="w-4 h-4 mr-2" />
-                                    Edit
-                                  </DropdownMenuItem>
-                                )}
-                                {can('nin', 'update') && (
-                                  <DropdownMenuItem onClick={() => handleToggleStatus(record.id)}>
+                                {!record.isVerified && (
+                                  <DropdownMenuItem onClick={() => handleVerify(record.id)}>
                                     <UserCheck className="w-4 h-4 mr-2" />
-                                    {record.status === 'active' ? 'Suspend' : 'Activate'}
+                                    Verify NIN
                                   </DropdownMenuItem>
                                 )}
-                                {can('nin', 'delete') && (
-                                  <DropdownMenuItem 
-                                    className="text-destructive"
-                                    onClick={() => handleDelete(record.id)}
-                                  >
-                                    <Trash2 className="w-4 h-4 mr-2" />
-                                    Delete
-                                  </DropdownMenuItem>
-                                )}
+                                <DropdownMenuItem onClick={() => handleEdit(record)}>
+                                  <Edit className="w-4 h-4 mr-2" />
+                                  Edit
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleToggleStatus(record.id)}>
+                                  <UserCheck className="w-4 h-4 mr-2" />
+                                  {record.status === 'active' ? 'Suspend' : 'Activate'}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem 
+                                  className="text-destructive"
+                                  onClick={() => handleDelete(record.id)}
+                                >
+                                  <Trash2 className="w-4 h-4 mr-2" />
+                                  Delete
+                                </DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
                           </TableCell>

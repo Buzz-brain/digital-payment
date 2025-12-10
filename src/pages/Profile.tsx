@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
-import { User, Mail, Phone, Shield, Languages, Moon, Sun, Type } from "lucide-react";
+import { User, Mail, Phone, Shield, Languages, Moon, Sun, Type, MapPin, Briefcase, Calendar, Users, Home, Globe, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,9 +20,9 @@ const Profile = () => {
   const [largeText, setLargeText] = useState(false);
   const [profileData, setProfileData] = useState({
     username: user?.username || '',
-    fullName: user?.fullName || "",
-    email: user?.email || "",
-    phone: user?.phone || "",
+    fullName: user?.ninInfo?.fullName || user?.fullName || "",
+    email: user?.ninInfo?.email || user?.email || "",
+    phone: user?.ninInfo?.phone || user?.phone || "",
   });
 
   useEffect(() => {
@@ -35,9 +35,9 @@ const Profile = () => {
     if (user) {
       setProfileData({
         username: user.username || '',
-        fullName: user.fullName || '',
-        email: user.email || '',
-        phone: user.phone || '',
+        fullName: user.ninInfo?.fullName || user.fullName || '',
+        email: user.ninInfo?.email || user.email || '',
+        phone: user.ninInfo?.phone || user.phone || '',
       });
     }
   }, [user]);
@@ -95,60 +95,190 @@ const Profile = () => {
               <TabsTrigger value="preferences">{t("preferences")}</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="profile">
+            <TabsContent value="profile" className="space-y-6">
+              {/* Account Info Card - Read-only overview */}
+              <Card className="shadow-elegant bg-gradient-to-br from-primary/5 to-transparent border-primary/20">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Shield className="h-5 w-5 text-primary" />
+                    {t('accountInformation')}
+                  </CardTitle>
+                  <CardDescription>{t('systemManagedDetails')}</CardDescription>
+                </CardHeader>
+                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <Label className="text-xs uppercase tracking-wide text-muted-foreground">{t('username')}</Label>
+                    <p className="text-lg font-semibold">{user?.username}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs uppercase tracking-wide text-muted-foreground">{t('nin')}</Label>
+                    <p className="text-lg font-mono">{user?.nin || t('na')}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs uppercase tracking-wide text-muted-foreground">{t('accountStatus')}</Label>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-green-500" />
+                      <p className="text-sm font-medium">{t('active')}</p>
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs uppercase tracking-wide text-muted-foreground">{t('memberSince')}</Label>
+                    <p className="text-sm">{t('accountVerified')}</p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Personal & Contact Information - Editable */}
               <Card className="shadow-elegant">
                 <CardHeader>
-                  <CardTitle>{t("personalInformation")}</CardTitle>
-                  <CardDescription>{t("updateYourDetails")}</CardDescription>
+                  <CardTitle className="flex items-center gap-2">
+                    <User className="h-5 w-5" />
+                    Personal Information
+                  </CardTitle>
+                  <CardDescription>Update your contact details</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <form onSubmit={handleProfileUpdate} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="username">{t("username")}</Label>
-                      <Input
-                        id="username"
-                        value={profileData.username}
-                        onChange={(e) => setProfileData({ ...profileData, username: e.target.value })}
-                      />
+                  <form onSubmit={handleProfileUpdate} className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="name">{t("fullName")}</Label>
+                        <Input
+                          id="name"
+                          value={profileData.fullName}
+                          onChange={(e) => setProfileData({ ...profileData, fullName: e.target.value })}
+                          className="bg-muted/30"
+                        />
+                        <p className="text-xs text-muted-foreground">{t('fromNinRecord')}</p>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="email" className="flex items-center gap-2">
+                          <Mail className="h-4 w-4" />
+                          {t("email")}
+                        </Label>
+                        <Input
+                          id="email"
+                          type="email"
+                          value={profileData.email}
+                          onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
+                          className="bg-muted/30"
+                        />
+                        <p className="text-xs text-muted-foreground">{t('fromNinRecord')}</p>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="phone" className="flex items-center gap-2">
+                          <Phone className="h-4 w-4" />
+                          {t("phone")}
+                        </Label>
+                        <Input
+                          id="phone"
+                          value={profileData.phone}
+                          onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
+                          className="bg-muted/30"
+                        />
+                        <p className="text-xs text-muted-foreground">{t('fromNinRecord')}</p>
+                      </div>
                     </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="name">{t("fullName")}</Label>
-                      <Input
-                        id="name"
-                        value={profileData.fullName}
-                        onChange={(e) => setProfileData({ ...profileData, fullName: e.target.value })}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="email" className="flex items-center gap-2">
-                        <Mail className="h-4 w-4" />
-                        {t("email")}
-                      </Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        value={profileData.email}
-                        onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="phone" className="flex items-center gap-2">
-                        <Phone className="h-4 w-4" />
-                        {t("phone")}
-                      </Label>
-                      <Input
-                        id="phone"
-                        value={profileData.phone}
-                        onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
-                      />
-                    </div>
-                    <Button type="submit" disabled={loading}>
+                    <Button type="submit" disabled={loading} className="w-full md:w-auto">
                       {loading ? t("saving") : t("saveChanges")}
                     </Button>
                   </form>
                 </CardContent>
               </Card>
+
+              {/* Demographic Information - Read-only from NinInfo */}
+              {user?.ninInfo && (
+                <Card className="shadow-elegant">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <MapPin className="h-5 w-5" />
+                      {t('demographicInformation')}
+                    </CardTitle>
+                    <CardDescription>{t('verifiedFromNin')}</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {user.ninInfo.state && (
+                        <div className="space-y-1 pb-4 border-b md:border-b-0">
+                          <Label className="text-xs uppercase tracking-wide text-muted-foreground flex items-center gap-2">
+                            <MapPin className="h-3 w-3" />
+                            {t('stateRegion')}
+                          </Label>
+                          <p className="text-base font-medium">{user.ninInfo.state}</p>
+                        </div>
+                      )}
+                      {user.ninInfo.lga && (
+                        <div className="space-y-1 pb-4 border-b md:border-b-0">
+                          <Label className="text-xs uppercase tracking-wide text-muted-foreground flex items-center gap-2">
+                            <Home className="h-3 w-3" />
+                            {t('lga')}
+                          </Label>
+                          <p className="text-base font-medium">{user.ninInfo.lga}</p>
+                        </div>
+                      )}
+                      {user.ninInfo.region && (
+                        <div className="space-y-1 pb-4 border-b md:border-b-0">
+                          <Label className="text-xs uppercase tracking-wide text-muted-foreground flex items-center gap-2">
+                            <Globe className="h-3 w-3" />
+                            {t('region')}
+                          </Label>
+                          <p className="text-base font-medium">{user.ninInfo.region}</p>
+                        </div>
+                      )}
+                      {user.ninInfo.occupation && (
+                        <div className="space-y-1 pb-4 border-b md:border-b-0">
+                          <Label className="text-xs uppercase tracking-wide text-muted-foreground flex items-center gap-2">
+                            <Briefcase className="h-3 w-3" />
+                            {t('occupation')}
+                          </Label>
+                          <p className="text-base font-medium">{user.ninInfo.occupation}</p>
+                        </div>
+                      )}
+                      {user.ninInfo.gender && (
+                        <div className="space-y-1 pb-4 border-b md:border-b-0">
+                          <Label className="text-xs uppercase tracking-wide text-muted-foreground flex items-center gap-2">
+                            <Users className="h-3 w-3" />
+                            {t('gender')}
+                          </Label>
+                          <p className="text-base font-medium capitalize">{user.ninInfo.gender}</p>
+                        </div>
+                      )}
+                      {user.ninInfo.dob && (
+                        <div className="space-y-1 pb-4 border-b md:border-b-0">
+                          <Label className="text-xs uppercase tracking-wide text-muted-foreground flex items-center gap-2">
+                            <Calendar className="h-3 w-3" />
+                            {t('dateOfBirth')}
+                          </Label>
+                          <p className="text-base font-medium">{new Date(user.ninInfo.dob).toLocaleDateString()}</p>
+                        </div>
+                      )}
+                      {user.ninInfo.address && (
+                        <div className="space-y-1 pb-4 md:col-span-2 border-b">
+                          <Label className="text-xs uppercase tracking-wide text-muted-foreground flex items-center gap-2">
+                            <Home className="h-3 w-3" />
+                            {t('address')}
+                          </Label>
+                          <p className="text-base font-medium">{user.ninInfo.address}</p>
+                        </div>
+                      )}
+                      {user.ninInfo.tribe && (
+                        <div className="space-y-1 pb-4 md:col-span-2 border-b">
+                          <Label className="text-xs uppercase tracking-wide text-muted-foreground flex items-center gap-2">
+                            <Info className="h-3 w-3" />
+                            {t('tribe')}
+                          </Label>
+                          <p className="text-base font-medium">{user.ninInfo.tribe}</p>
+                        </div>
+                      )}
+                    </div>
+                    <div className="mt-6 pt-4 border-t">
+                      <p className="text-xs text-muted-foreground flex items-center gap-2">
+                        <Shield className="h-3 w-3" />
+                        {t('ninInfoNotice')}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </TabsContent>
 
             <TabsContent value="security">

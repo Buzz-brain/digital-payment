@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
+import i18n from '@/i18n/config';
+import { speakText } from '@/utils/speakText';
 import { ArrowLeft, Send, User, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,7 +46,9 @@ const SendMoney = () => {
     const recipient = (formData.recipient || '').trim();
     if (!/^[0-9]{11}$/.test(recipient)) {
       setLoading(false);
-      toast.error('Recipient NIN must be 11 digits');
+      const msg = 'Recipient NIN must be 11 digits';
+      toast.error(msg);
+      speakText(msg, i18n.language);
       return;
     }
 
@@ -52,14 +56,18 @@ const SendMoney = () => {
     const ok = await lookupRecipient(recipient);
     if (!ok) {
       setLoading(false);
-      toast.error('Recipient NIN not found');
+      const msg = 'Recipient NIN not found';
+      toast.error(msg);
+      speakText(msg, i18n.language);
       return;
     }
 
     const amountNum = Number(formData.amount);
     if (!amountNum || amountNum <= 0) {
       setLoading(false);
-      toast.error('Enter a valid amount');
+      const msg = 'Enter a valid amount';
+      toast.error(msg);
+      speakText(msg, i18n.language);
       return;
     }
 
@@ -83,12 +91,14 @@ const SendMoney = () => {
       setLoading(false);
       setConfirmOpen(false);
       setPendingPayload(null);
-      toast.success(res?.message || `Successfully sent ₦${payload.amount} to ${recipientName || payload.recipient}`);
+      const msg = res?.message || `Successfully sent ₦${payload.amount} to ${recipientName || payload.recipient}`;
+      toast.success(msg);
+      speakText(msg, i18n.language);
 
       // Best-practice: refresh only the wallet and transactions resources
-      try {
-        const userId = useAuthStore.getState().user?.id;
-        if (userId) {
+      const userId = useAuthStore.getState().user?.id;
+      if (userId) {
+        try {
           // fetch updated wallet
           const walletResp: any = await apiGet(`/api/wallet/${userId}`);
           // fetch updated transactions for logged in user
@@ -102,23 +112,35 @@ const SendMoney = () => {
             // ignore cache update errors
           }
 
+          // Update react-query cache for wallet so Dashboard reads fresh data
+          try {
+            queryClient.setQueryData(['wallet', userId], walletResp);
+          } catch (e) {
+            // ignore
+          }
+
           // update zustand auth store with new wallet info
           useAuthStore.setState((state: any) => ({
             wallet: walletResp || null,
             user: state.user ? { ...state.user, walletBalance: walletResp?.balance ?? state.user.walletBalance, wallet: walletResp ? { balance: walletResp.balance ?? 0, ledger: walletResp.ledger || [] } : state.user.wallet } : state.user,
           }));
 
-          // Optionally cache transactions somewhere; if your Transactions page reads from an in-memory query/cache, you can update it here.
+          // Wait a tick to ensure zustand subscribers update before navigation
+          setTimeout(() => {
+            navigate('/dashboard');
+          }, 0);
+        } catch (e) {
+          // fallback: still navigate, but may be stale
+          navigate('/dashboard');
         }
-      } catch (e) {
-        // non-fatal; we already succeeded the transfer. Log silently and continue.
-        // console.warn('Failed to refresh wallet/transactions after transfer', e);
+      } else {
+        navigate('/dashboard');
       }
-
-      navigate('/dashboard');
     } catch (err: any) {
       setLoading(false);
-      toast.error(err?.message || 'Transfer failed');
+      const msg = err?.message || 'Transfer failed';
+      toast.error(msg);
+      speakText(msg, i18n.language);
     }
   };
 

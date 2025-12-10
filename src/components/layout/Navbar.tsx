@@ -35,7 +35,7 @@ const Navbar = () => {
     ? [
         { path: '/dashboard', label: t('dashboard') },
         { path: '/transactions', label: t('transactions') },
-        { path: '/polls', label: 'Polls' },
+        { path: '/polls', label: t('pollsTitle') },
         { path: '/announcements', label: t('announcements') },
       ]
     : [];
@@ -100,7 +100,7 @@ const Navbar = () => {
                     {user?.fullName.split(' ')[0]}
                   </Button>
                 </Link>
-                <Button onClick={logout} variant="outline">
+                <Button onClick={() => void logout()} variant="outline">
                   {t('logout')}
                 </Button>
               </>

@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
+import i18n from '@/i18n/config';
+import { speakText } from '@/utils/speakText';
 import { ArrowLeft, Wallet, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +27,7 @@ const Withdraw = () => {
   const [formData, setFormData] = useState({
     amount: "",
     method: "",
+    accountName: "",
     accountNumber: "",
     bankName: "",
     description: "",
@@ -40,11 +43,23 @@ const Withdraw = () => {
     const amountNum = Number(formData.amount);
     if (!amountNum || amountNum <= 0) {
       setLoading(false);
-      toast.error('Enter a valid amount');
+      toast.error(t('enterValidAmount'));
       return;
     }
 
     const payload: any = { amount: amountNum, note: formData.description };
+
+    // attach bankInfo when method is bank
+    if (formData.method === 'bank') {
+      payload.bankInfo = {
+        accountName: formData.accountName,
+        accountNumber: formData.accountNumber,
+        bankName: formData.bankName,
+      };
+    } else if (formData.method) {
+      // include method in note for other methods
+      payload.note = (payload.note ? payload.note + ' - ' : '') + `method:${formData.method}`;
+    }
 
     if (amountNum >= LARGE_WITHDRAW_THRESHOLD) {
       setPendingPayload(payload);
@@ -59,15 +74,20 @@ const Withdraw = () => {
   const doWithdraw = async (payload: any) => {
     setLoading(true);
     try {
-      const res: any = await apiPost('/api/transactions/withdraw', payload);
+      const res: any = await apiPost('/api/withdrawals', payload);
       setLoading(false);
       setConfirmOpen(false);
       setPendingPayload(null);
-      toast.success(res?.message || `Successfully requested withdrawal of ₦${payload.amount}`);
+      const msg = res?.message || t('withdrawalRequestSuccess', { amount: payload.amount });
+      toast.success(msg);
+      speakText(msg, i18n.language);
       navigate('/dashboard');
     } catch (err: any) {
       setLoading(false);
-      toast.error(err?.message || 'Withdrawal failed');
+      toast.error(err?.message || t('withdrawalFailed'));
+      const msg = err?.message || t('withdrawalFailed');
+      toast.error(msg);
+      speakText(msg, i18n.language);
     }
   };
 
@@ -138,6 +158,16 @@ const Withdraw = () => {
                     className="space-y-4"
                   >
                     <div className="space-y-2">
+                      <Label htmlFor="accountName">Account Name</Label>
+                      <Input
+                        id="accountName"
+                        placeholder="Account holder name"
+                        value={formData.accountName}
+                        onChange={(e) => setFormData({ ...formData, accountName: e.target.value })}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
                       <Label htmlFor="bankName" className="flex items-center gap-2">
                         <CreditCard className="h-4 w-4" />
                         {t("bankName")}
@@ -184,15 +214,15 @@ const Withdraw = () => {
             </CardContent>
           </Card>
             <Dialog open={confirmOpen} onOpenChange={(open) => setConfirmOpen(open)}>
-              <DialogContent>
+                <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Confirm Withdrawal</DialogTitle>
+                  <DialogTitle>{t('confirmWithdrawalTitle')}</DialogTitle>
                 </DialogHeader>
                 <div className="mt-2">
-                  <p className="mb-4">You are about to withdraw <strong>₦{pendingPayload?.amount}</strong>. This action may take some time to process. Do you want to continue?</p>
+                  <p className="mb-4">{t('confirmWithdrawalDesc', { amount: pendingPayload?.amount })}</p>
                   <div className="flex gap-2 justify-end">
-                    <Button variant="ghost" onClick={() => { setConfirmOpen(false); setPendingPayload(null); }}>Cancel</Button>
-                    <Button onClick={async () => { if (pendingPayload) await doWithdraw(pendingPayload); }} disabled={!pendingPayload || loading}>{loading ? t('processing') : 'Confirm'}</Button>
+                    <Button variant="ghost" onClick={() => { setConfirmOpen(false); setPendingPayload(null); }}>{t('cancel')}</Button>
+                    <Button onClick={async () => { if (pendingPayload) await doWithdraw(pendingPayload); }} disabled={!pendingPayload || loading}>{loading ? t('processing') : t('confirm')}</Button>
                   </div>
                 </div>
               </DialogContent>

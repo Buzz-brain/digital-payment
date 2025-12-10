@@ -14,6 +14,7 @@ interface User {
     balance: number;
     ledger?: Array<any>;
   };
+  ninInfo?: Record<string, any> | null;
 }
 
 interface AuthState {
@@ -52,12 +53,29 @@ const mockUsers: Record<string, User & { password: string }> = {
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       user: null,
       wallet: null,
       initializing: false,
       isAuthenticated: false,
       
+      // Helper to normalize user response: prefer `ninInfo` fields when present
+      _formatUserResp: (userResp: any, walletBalance = 0) => {
+        const nin = userResp?.ninInfo || null;
+        return {
+          id: userResp._id || userResp.id,
+          username: userResp.username,
+          fullName: (nin && nin.fullName) || userResp.fullName || userResp.username || '',
+          nin: userResp.nin,
+          phone: (nin && nin.phone) || userResp.phone || '',
+          walletBalance: walletBalance || 0,
+          email: (nin && nin.email) || userResp.email || undefined,
+          wallet: undefined,
+          // Preserve raw ninInfo object so consumer components can read demographic fields
+          ninInfo: userResp.ninInfo || null,
+        } as any;
+      },
+
       login: async (identifier: string, password: string) => {
         // Try backend login first
         try {
@@ -73,7 +91,8 @@ export const useAuthStore = create<AuthState>()(
           });
 
           const userResp = res.user || res;
-          set({ user: { id: userResp.id || userResp._id, username: userResp.username, fullName: userResp.fullName || userResp.username || '', nin: userResp.nin, phone: userResp.phone || '', walletBalance: userResp.walletBalance || 0, email: userResp.email }, isAuthenticated: true, token: res.token });
+          const formatted = get()._formatUserResp(userResp, userResp.walletBalance || 0);
+          set({ user: formatted, isAuthenticated: true, token: res.token });
           return true;
         } catch (err: any) {
           // If it's an HTTP error from server (e.g., invalid credentials), rethrow so UI can show message
@@ -108,7 +127,8 @@ export const useAuthStore = create<AuthState>()(
 
           // Expecting { user, token }
           const userResp = res.user || res;
-          set({ user: { id: userResp.id || userResp._id, username: userResp.username, fullName: userResp.fullName || userResp.username || '', nin: userResp.nin, phone: userResp.phone || '', walletBalance: userResp.walletBalance || 0, email: userResp.email }, isAuthenticated: true, token: res.token });
+          const formatted = get()._formatUserResp(userResp, userResp.walletBalance || 0);
+          set({ user: formatted, isAuthenticated: true, token: res.token });
           return true;
         } catch (err: any) {
           // If server returned an HTTP error (validation like NIN not found), rethrow
@@ -154,7 +174,8 @@ export const useAuthStore = create<AuthState>()(
               const res: any = await apiFetch('/api/auth/me', { method: 'GET' });
               const userResp = res.user || res;
               const wallet = res.wallet || null;
-              set({ user: { id: userResp._id || userResp.id, username: userResp.username, fullName: userResp.fullName || userResp.username || '', nin: userResp.nin, phone: userResp.phone || '', walletBalance: wallet?.balance || 0, email: userResp.email, wallet: wallet ? { balance: wallet.balance || 0, ledger: wallet.ledger || [] } : undefined }, wallet: wallet ? { balance: wallet.balance || 0, ledger: wallet.ledger || [] } : null, isAuthenticated: true });
+              const formatted = get()._formatUserResp(userResp, wallet?.balance || 0);
+              set({ user: { ...formatted, wallet: wallet ? { balance: wallet.balance || 0, ledger: wallet.ledger || [] } : undefined }, wallet: wallet ? { balance: wallet.balance || 0, ledger: wallet.ledger || [] } : null, isAuthenticated: true });
             } catch (e) {
               // Couldn't fetch current user — ensure client is logged out
               set({ user: null, wallet: null, isAuthenticated: false, token: undefined });
@@ -174,7 +195,8 @@ export const useAuthStore = create<AuthState>()(
         try {
           const res: any = await apiFetch('/api/user/profile', { method: 'GET' });
           const userResp = res || {};
-          set((state) => ({ user: { ...(state.user || {}), id: userResp._id || userResp.id, username: userResp.username, fullName: userResp.fullName || userResp.username || '', nin: userResp.nin, phone: userResp.phone || '', walletBalance: state.user?.walletBalance || 0, email: userResp.email } }));
+          const formatted = get()._formatUserResp(userResp, get().user?.walletBalance || 0);
+          set((state) => ({ user: { ...(state.user || {}), ...formatted } }));
         } catch (e) {
           // ignore or clear store on error
         }
@@ -184,7 +206,8 @@ export const useAuthStore = create<AuthState>()(
         try {
           const res: any = await apiFetch('/api/user/profile', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
           const userResp = res || {};
-          set((state) => ({ user: { id: userResp._id || userResp.id, username: userResp.username, fullName: userResp.fullName || userResp.username || '', nin: userResp.nin, phone: userResp.phone || '', walletBalance: state.user?.walletBalance || 0, email: userResp.email }, isAuthenticated: true }));
+          const formatted = get()._formatUserResp(userResp, get().user?.walletBalance || 0);
+          set((state) => ({ user: formatted, isAuthenticated: true }));
         } catch (e) {
           throw e;
         }

@@ -9,7 +9,7 @@ const navItems = [
   { to: '/admin/beneficiaries', icon: Users, label: 'Beneficiaries' },
   { to: '/admin/nin-management', icon: CreditCard, label: 'NIN Management' },
   { to: '/admin/disbursements', icon: DollarSign, label: 'Disbursements' },
-  // { to: '/admin/polls', icon: Vote, label: 'Polls' },
+  { to: '/admin/polls', icon: Vote, label: 'Polls' },
   { to: '/admin/announcements', icon: Megaphone, label: 'Announcements' },
   { to: '/admin/feedback', icon: MessageSquare, label: 'Feedback' },
   // { to: '/admin/notifications', icon: Bell, label: 'Notifications' },

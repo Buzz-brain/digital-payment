@@ -16,6 +16,9 @@ import { apiGet } from '@/lib/api';
 import { useQuery } from '@tanstack/react-query';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
+import { useAuthStore } from '@/store/authStore';
+import i18n from '@/i18n/config';
+import { speakText } from '@/utils/speakText';
 
 const Transactions = () => {
   const { t } = useTranslation();
@@ -35,7 +38,13 @@ const Transactions = () => {
     staleTime: 1000 * 10,
   });
 
+  const user = useAuthStore((s) => s.user);
+  const userId = user?.id;
   const filteredTransactions = (transactions || []).filter((transaction) => {
+    // Only show debit if user is sender, credit if user is receiver
+    const isSenderDebit = transaction.type === 'debit' && transaction.from === userId;
+    const isReceiverCredit = transaction.type === 'credit' && transaction.to === userId;
+    if (!(isSenderDebit || isReceiverCredit)) return false;
     const desc = (transaction.description || '') as string;
     const ref = (transaction.reference || transaction._id || '') as string;
     const matchesSearch = desc.toLowerCase().includes(searchQuery.toLowerCase()) || ref.toLowerCase().includes(searchQuery.toLowerCase());
@@ -62,11 +71,11 @@ const Transactions = () => {
   };
 
   const totalCredit = transactions
-    .filter((t) => t.type === 'credit')
+    .filter((t) => t.type === 'credit' && t.to === userId)
     .reduce((sum, t) => sum + (t.amount || 0), 0);
 
   const totalDebit = transactions
-    .filter((t) => t.type === 'debit')
+    .filter((t) => t.type === 'debit' && t.from === userId)
     .reduce((sum, t) => sum + (t.amount || 0), 0);
 
   return (
@@ -81,7 +90,7 @@ const Transactions = () => {
           {/* Header */}
           <div>
             <h1 className="text-3xl font-bold mb-2">{t('transactions')}</h1>
-            <p className="text-muted-foreground">View and manage your transaction history</p>
+            <p className="text-muted-foreground">{t('transactionsDescription')}</p>
           </div>
 
           {/* Stats Cards */}
@@ -90,7 +99,7 @@ const Transactions = () => {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground mb-1">Total Credit</p>
+                    <p className="text-sm text-muted-foreground mb-1">{t('totalCredit')}</p>
                     <p className="text-2xl font-bold text-success">
                       {formatCurrency(totalCredit)}
                     </p>
@@ -106,7 +115,7 @@ const Transactions = () => {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground mb-1">Total Debit</p>
+                    <p className="text-sm text-muted-foreground mb-1">{t('totalDebit')}</p>
                     <p className="text-2xl font-bold text-destructive">
                       {formatCurrency(totalDebit)}
                     </p>
@@ -122,7 +131,7 @@ const Transactions = () => {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground mb-1">Net Balance</p>
+                    <p className="text-sm text-muted-foreground mb-1">{t('netBalance')}</p>
                     <p className="text-2xl font-bold text-primary">
                       {formatCurrency(totalCredit - totalDebit)}
                     </p>
@@ -138,15 +147,15 @@ const Transactions = () => {
           {/* Filters */}
           <Card>
             <CardHeader>
-              <CardTitle>Filter Transactions</CardTitle>
-              <CardDescription>Search and filter your transaction history</CardDescription>
+              <CardTitle>{t('filterTransactions')}</CardTitle>
+              <CardDescription>{t('filterDescription')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex flex-col md:flex-row gap-4">
                 <div className="flex-1 relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
-                    placeholder="Search by description or reference..."
+                    placeholder={t('searchPlaceholder')}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-9"
@@ -155,24 +164,24 @@ const Transactions = () => {
                 
                 <Select value={filterType} onValueChange={(value: any) => setFilterType(value)}>
                   <SelectTrigger className="w-full md:w-[180px]">
-                    <SelectValue placeholder="Type" />
+                    <SelectValue placeholder={t('type')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Types</SelectItem>
-                    <SelectItem value="credit">Credit</SelectItem>
-                    <SelectItem value="debit">Debit</SelectItem>
+                    <SelectItem value="all">{t('allTypes')}</SelectItem>
+                    <SelectItem value="credit">{t('credit')}</SelectItem>
+                    <SelectItem value="debit">{t('debit')}</SelectItem>
                   </SelectContent>
                 </Select>
 
                 <Select value={filterStatus} onValueChange={(value: any) => setFilterStatus(value)}>
                   <SelectTrigger className="w-full md:w-[180px]">
-                    <SelectValue placeholder="Status" />
+                    <SelectValue placeholder={t('status')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Status</SelectItem>
-                    <SelectItem value="completed">Completed</SelectItem>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="failed">Failed</SelectItem>
+                    <SelectItem value="all">{t('allStatus')}</SelectItem>
+                    <SelectItem value="completed">{t('completed')}</SelectItem>
+                    <SelectItem value="pending">{t('pending')}</SelectItem>
+                    <SelectItem value="failed">{t('failed')}</SelectItem>
                   </SelectContent>
                 </Select>
 
@@ -184,7 +193,7 @@ const Transactions = () => {
                     setFilterStatus('all');
                   }}
                 >
-                  Clear
+                  {t('clear')}
                 </Button>
               </div>
             </CardContent>
@@ -194,16 +203,16 @@ const Transactions = () => {
           <Card>
             <CardHeader>
               <CardTitle>
-                Transaction History ({filteredTransactions.length})
+                {t('transactionHistory')} ({filteredTransactions.length})
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
                 {isLoading ? (
-                  <div className="text-center py-12 text-muted-foreground">Loading transactions...</div>
+                  <div className="text-center py-12 text-muted-foreground">{t('loadingTransactions')}</div>
                 ) : filteredTransactions.length === 0 ? (
                   <div className="text-center py-12 text-muted-foreground">
-                    No transactions found matching your criteria
+                    {t('noTransactionsFound')}
                   </div>
                 ) : (
                   filteredTransactions.map((transaction) => (
@@ -257,7 +266,7 @@ const Transactions = () => {
                               : 'destructive'
                           }
                         >
-                          {transaction.status}
+                          {t(transaction.status)}
                         </Badge>
                       </div>
                     </motion.div>

@@ -29,63 +29,6 @@ export interface Notification {
   read: boolean;
 }
 
-export const mockTransactions: Transaction[] = [
-  {
-    id: 'TXN001',
-    type: 'credit',
-    amount: 5000,
-    description: 'Government Disbursement - March 2025',
-    date: '2025-03-15T10:30:00',
-    status: 'completed',
-    reference: 'DPI-GOV-2025-001',
-  },
-  {
-    id: 'TXN002',
-    type: 'debit',
-    amount: 1500,
-    description: 'Withdrawal to Bank Account',
-    date: '2025-03-14T14:20:00',
-    status: 'completed',
-    reference: 'DPI-WDR-2025-002',
-  },
-  {
-    id: 'TXN003',
-    type: 'credit',
-    amount: 3000,
-    description: 'Transfer from Fatima Ibrahim',
-    date: '2025-03-12T09:15:00',
-    status: 'completed',
-    reference: 'DPI-TRF-2025-003',
-  },
-  {
-    id: 'TXN004',
-    type: 'debit',
-    amount: 500,
-    description: 'Bill Payment - Electricity',
-    date: '2025-03-10T16:45:00',
-    status: 'completed',
-    reference: 'DPI-BILL-2025-004',
-  },
-  {
-    id: 'TXN005',
-    type: 'credit',
-    amount: 10000,
-    description: 'Government Disbursement - February 2025',
-    date: '2025-02-15T11:00:00',
-    status: 'completed',
-    reference: 'DPI-GOV-2025-005',
-  },
-  {
-    id: 'TXN006',
-    type: 'debit',
-    amount: 2000,
-    description: 'Transfer to Chukwudi Okonkwo',
-    date: '2025-02-10T13:30:00',
-    status: 'completed',
-    reference: 'DPI-TRF-2025-006',
-  },
-];
-
 export const mockNotifications: Notification[] = [
   {
     id: 'NOT001',

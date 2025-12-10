@@ -6,6 +6,7 @@ export type AuditAction =
   | 'nin_created'
   | 'nin_updated'
   | 'nin_deleted'
+  | 'nin_verified'
   | 'nin_linked'
   | 'disbursement_created'
   | 'disbursement_approved'

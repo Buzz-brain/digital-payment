@@ -8,7 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import type { Announcement as AnnouncementType } from "@/data/mockData";
 import { apiGet } from "@/lib/api";
+import i18n from '@/i18n/config';
 import { format } from "date-fns";
+import TextToSpeechButton from '@/components/TextToSpeechButton';
 
 const Announcements = () => {
   const { t } = useTranslation();
@@ -108,27 +110,31 @@ const Announcements = () => {
                             {announcement.title}
                           </CardTitle>
                           <div className="flex items-center gap-2 mt-2">
-                            <Badge
-                              variant={getPriorityColor(announcement.priority)}
-                            >
-                              {announcement.priority}
-                            </Badge>
-                            <span className="text-sm text-muted-foreground flex items-center gap-1">
+                              <Badge
+                                variant={getPriorityColor(announcement.priority)}
+                              >
+                                {t(announcement.priority) ?? announcement.priority}
+                              </Badge>
+                              <span className="text-sm text-muted-foreground flex items-center gap-1">
                               <Calendar className="h-3 w-3" />
                               {format(
                                 new Date(announcement.publishedAt),
                                 "MMM dd, yyyy"
                               )}
                             </span>
+                              <Badge variant="outline">{t(announcement.category) ?? announcement.category}</Badge>
                           </div>
                         </div>
                       </div>
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-muted-foreground line-clamp-2">
-                      {announcement.content}
-                    </p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-muted-foreground line-clamp-2 flex-1">
+                        {announcement.content}
+                      </p>
+                      <TextToSpeechButton text={announcement.content} lang={i18n.language} />
+                    </div>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -140,7 +146,7 @@ const Announcements = () => {
           open={!!selectedAnnouncement}
           onOpenChange={() => setSelectedAnnouncement(null)}
         >
-          <DialogContent className="max-w-2xl">
+                <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-3">
                 <span className="text-3xl">
@@ -159,7 +165,7 @@ const Announcements = () => {
                     "default"
                   }
                 >
-                  {selectedAnnouncement?.priority}
+                  {t(selectedAnnouncement?.priority) ?? selectedAnnouncement?.priority}
                 </Badge>
                 <span className="text-sm text-muted-foreground flex items-center gap-1">
                   <Calendar className="h-3 w-3" />
@@ -170,9 +176,14 @@ const Announcements = () => {
                     )}
                 </span>
               </div>
-              <p className="text-foreground leading-relaxed">
-                {selectedAnnouncement?.content}
-              </p>
+              <div className="flex items-center gap-2">
+                <p className="text-foreground leading-relaxed flex-1">
+                  {selectedAnnouncement?.content}
+                </p>
+                {selectedAnnouncement?.content && (
+                  <TextToSpeechButton text={selectedAnnouncement.content} lang={i18n.language} />
+                )}
+              </div>
             </div>
           </DialogContent>
         </Dialog>

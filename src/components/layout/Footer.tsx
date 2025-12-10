@@ -1,7 +1,10 @@
 import { Link } from 'react-router-dom';
 import { Wallet, Mail, Phone, MapPin, Facebook, Twitter, Instagram } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const Footer = () => {
+  const { t } = useTranslation();
+
   return (
     <footer className="bg-card border-t border-border mt-auto">
       <div className="container mx-auto px-4 py-12">
@@ -23,26 +26,26 @@ const Footer = () => {
 
           {/* Quick Links */}
           <div>
-            <h3 className="font-semibold mb-4">Quick Links</h3>
+            <h3 className="font-semibold mb-4">{t('footer.quickLinks')}</h3>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link to="/about" className="text-muted-foreground hover:text-primary transition-colors">
-                  About Us
+                  {t('footer.about')}
                 </Link>
               </li>
               <li>
                 <Link to="/services" className="text-muted-foreground hover:text-primary transition-colors">
-                  Services
+                  {t('footer.services')}
                 </Link>
               </li>
               <li>
                 <Link to="/faq" className="text-muted-foreground hover:text-primary transition-colors">
-                  FAQ
+                  {t('footer.faq')}
                 </Link>
               </li>
               <li>
                 <Link to="/support" className="text-muted-foreground hover:text-primary transition-colors">
-                  Support
+                  {t('footer.support')}
                 </Link>
               </li>
             </ul>
@@ -50,21 +53,21 @@ const Footer = () => {
 
           {/* Legal */}
           <div>
-            <h3 className="font-semibold mb-4">Legal</h3>
+            <h3 className="font-semibold mb-4">{t('footer.legal')}</h3>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link to="/privacy" className="text-muted-foreground hover:text-primary transition-colors">
-                  Privacy Policy
+                  {t('footer.privacyPolicy')}
                 </Link>
               </li>
               <li>
                 <Link to="/terms" className="text-muted-foreground hover:text-primary transition-colors">
-                  Terms of Service
+                  {t('footer.terms')}
                 </Link>
               </li>
               <li>
                 <Link to="/security" className="text-muted-foreground hover:text-primary transition-colors">
-                  Security
+                  {t('footer.security')}
                 </Link>
               </li>
             </ul>
@@ -72,19 +75,19 @@ const Footer = () => {
 
           {/* Contact */}
           <div>
-            <h3 className="font-semibold mb-4">Contact Us</h3>
+            <h3 className="font-semibold mb-4">{t('footer.contactUs')}</h3>
             <ul className="space-y-3 text-sm">
               <li className="flex items-center space-x-2 text-muted-foreground">
                 <Mail className="w-4 h-4" />
-                <span>support@dpi.gov.ng</span>
+                <span>{t('footer.contactEmail')}</span>
               </li>
               <li className="flex items-center space-x-2 text-muted-foreground">
                 <Phone className="w-4 h-4" />
-                <span>+234 800 123 4567</span>
+                <span>{t('footer.contactPhone')}</span>
               </li>
               <li className="flex items-center space-x-2 text-muted-foreground">
                 <MapPin className="w-4 h-4" />
-                <span>Abuja, Nigeria</span>
+                <span>{t('footer.contactAddress')}</span>
               </li>
             </ul>
             
@@ -114,7 +117,7 @@ const Footer = () => {
 
         {/* Bottom Bar */}
         <div className="mt-8 pt-8 border-t border-border text-center text-sm text-muted-foreground">
-          <p>© 2025 Digital Payment Initiative. All rights reserved. Powered by the Federal Government of Nigeria.</p>
+          <p>{t('footer.rights')}</p>
         </div>
       </div>
     </footer>
