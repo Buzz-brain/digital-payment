@@ -50,7 +50,7 @@ const Navbar = () => {
               <Wallet className="w-6 h-6 text-primary-foreground" />
             </div>
             <span className="text-xl font-bold bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent">
-              DPI
+              DigiPayG2C
             </span>
           </Link>
 
@@ -62,8 +62,8 @@ const Navbar = () => {
                 to={link.path}
                 className={`px-4 py-2 rounded-lg transition-colors ${
                   isActivePath(link.path)
-                    ? 'bg-primary/10 text-primary font-medium'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
+                    ? "bg-primary/10 text-primary font-medium"
+                    : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
                 }`}
               >
                 {link.label}
@@ -85,7 +85,7 @@ const Navbar = () => {
                   <DropdownMenuItem
                     key={lang.code}
                     onClick={() => changeLanguage(lang.code)}
-                    className={i18n.language === lang.code ? 'bg-accent' : ''}
+                    className={i18n.language === lang.code ? "bg-accent" : ""}
                   >
                     {lang.name}
                   </DropdownMenuItem>
@@ -97,20 +97,20 @@ const Navbar = () => {
               <>
                 <Link to="/profile">
                   <Button variant="ghost">
-                    {user?.fullName.split(' ')[0]}
+                    {user?.fullName.split(" ")[0]}
                   </Button>
                 </Link>
                 <Button onClick={() => void logout()} variant="outline">
-                  {t('logout')}
+                  {t("logout")}
                 </Button>
               </>
             ) : (
               <>
                 <Link to="/login">
-                  <Button variant="ghost">{t('login')}</Button>
+                  <Button variant="ghost">{t("login")}</Button>
                 </Link>
                 <Link to="/register">
-                  <Button>{t('register')}</Button>
+                  <Button>{t("register")}</Button>
                 </Link>
               </>
             )}
@@ -134,7 +134,7 @@ const Navbar = () => {
           {mobileMenuOpen && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
+              animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
               className="md:hidden border-t border-border overflow-hidden"
             >
@@ -146,14 +146,14 @@ const Navbar = () => {
                     onClick={() => setMobileMenuOpen(false)}
                     className={`block px-4 py-2 rounded-lg ${
                       isActivePath(link.path)
-                        ? 'bg-primary/10 text-primary font-medium'
-                        : 'text-muted-foreground hover:bg-accent'
+                        ? "bg-primary/10 text-primary font-medium"
+                        : "text-muted-foreground hover:bg-accent"
                     }`}
                   >
                     {link.label}
                   </Link>
                 ))}
-                
+
                 <div className="pt-4 border-t border-border space-y-2">
                   {isAuthenticated ? (
                     <>
@@ -171,7 +171,7 @@ const Navbar = () => {
                         }}
                         className="w-full text-left px-4 py-2 rounded-lg hover:bg-accent text-destructive"
                       >
-                        {t('logout')}
+                        {t("logout")}
                       </button>
                     </>
                   ) : (
@@ -181,13 +181,13 @@ const Navbar = () => {
                         onClick={() => setMobileMenuOpen(false)}
                         className="block px-4 py-2 rounded-lg hover:bg-accent"
                       >
-                        {t('login')}
+                        {t("login")}
                       </Link>
                       <Link
                         to="/register"
                         onClick={() => setMobileMenuOpen(false)}
                       >
-                        <Button className="w-full">{t('register')}</Button>
+                        <Button className="w-full">{t("register")}</Button>
                       </Link>
                     </>
                   )}

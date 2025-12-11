@@ -16,36 +16,49 @@ const Footer = () => {
                 <Wallet className="w-6 h-6 text-primary-foreground" />
               </div>
               <span className="text-xl font-bold bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent">
-                DPI
+                DigiPayG2C
               </span>
             </div>
             <p className="text-sm text-muted-foreground">
-              Digital Payment Initiative - Empowering rural communities through accessible and secure digital financial services.
+              Digital Payment Initiative - Empowering rural communities through
+              accessible and secure digital financial services.
             </p>
           </div>
 
           {/* Quick Links */}
           <div>
-            <h3 className="font-semibold mb-4">{t('footer.quickLinks')}</h3>
+            <h3 className="font-semibold mb-4">{t("footer.quickLinks")}</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link to="/about" className="text-muted-foreground hover:text-primary transition-colors">
-                  {t('footer.about')}
+                <Link
+                  to="/about"
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
+                  {t("footer.about")}
                 </Link>
               </li>
               <li>
-                <Link to="/services" className="text-muted-foreground hover:text-primary transition-colors">
-                  {t('footer.services')}
+                <Link
+                  to="/services"
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
+                  {t("footer.services")}
                 </Link>
               </li>
               <li>
-                <Link to="/faq" className="text-muted-foreground hover:text-primary transition-colors">
-                  {t('footer.faq')}
+                <Link
+                  to="/faq"
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
+                  {t("footer.faq")}
                 </Link>
               </li>
               <li>
-                <Link to="/support" className="text-muted-foreground hover:text-primary transition-colors">
-                  {t('footer.support')}
+                <Link
+                  to="/support"
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
+                  {t("footer.support")}
                 </Link>
               </li>
             </ul>
@@ -53,21 +66,30 @@ const Footer = () => {
 
           {/* Legal */}
           <div>
-            <h3 className="font-semibold mb-4">{t('footer.legal')}</h3>
+            <h3 className="font-semibold mb-4">{t("footer.legal")}</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link to="/privacy" className="text-muted-foreground hover:text-primary transition-colors">
-                  {t('footer.privacyPolicy')}
+                <Link
+                  to="/privacy"
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
+                  {t("footer.privacyPolicy")}
                 </Link>
               </li>
               <li>
-                <Link to="/terms" className="text-muted-foreground hover:text-primary transition-colors">
-                  {t('footer.terms')}
+                <Link
+                  to="/terms"
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
+                  {t("footer.terms")}
                 </Link>
               </li>
               <li>
-                <Link to="/security" className="text-muted-foreground hover:text-primary transition-colors">
-                  {t('footer.security')}
+                <Link
+                  to="/security"
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
+                  {t("footer.security")}
                 </Link>
               </li>
             </ul>
@@ -75,22 +97,22 @@ const Footer = () => {
 
           {/* Contact */}
           <div>
-            <h3 className="font-semibold mb-4">{t('footer.contactUs')}</h3>
+            <h3 className="font-semibold mb-4">{t("footer.contactUs")}</h3>
             <ul className="space-y-3 text-sm">
               <li className="flex items-center space-x-2 text-muted-foreground">
                 <Mail className="w-4 h-4" />
-                <span>{t('footer.contactEmail')}</span>
+                <span>{t("footer.contactEmail")}</span>
               </li>
               <li className="flex items-center space-x-2 text-muted-foreground">
                 <Phone className="w-4 h-4" />
-                <span>{t('footer.contactPhone')}</span>
+                <span>{t("footer.contactPhone")}</span>
               </li>
               <li className="flex items-center space-x-2 text-muted-foreground">
                 <MapPin className="w-4 h-4" />
-                <span>{t('footer.contactAddress')}</span>
+                <span>{t("footer.contactAddress")}</span>
               </li>
             </ul>
-            
+
             {/* Social Media */}
             <div className="flex space-x-3 mt-4">
               <a
@@ -117,7 +139,7 @@ const Footer = () => {
 
         {/* Bottom Bar */}
         <div className="mt-8 pt-8 border-t border-border text-center text-sm text-muted-foreground">
-          <p>{t('footer.rights')}</p>
+          <p>{t("footer.rights")}</p>
         </div>
       </div>
     </footer>
