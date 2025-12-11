@@ -43,21 +43,24 @@ const Landing = () => {
 
   const testimonials = [
     {
-      name: 'Fatima Ibrahim',
-      location: 'Kano State',
-      message: 'DPI has made receiving government support so much easier. I can now manage my money without traveling to the city.',
+      name: "Fatima Ibrahim",
+      location: "Kano State",
+      message:
+        "DigiPayG2C has made receiving government support so much easier. I can now manage my money without traveling to the city.",
       rating: 5,
     },
     {
-      name: 'Chukwudi Okonkwo',
-      location: 'Enugu State',
-      message: 'The best thing about DPI is that it\'s in Igbo! My grandmother can now use it comfortably.',
+      name: "Chukwudi Okonkwo",
+      location: "Enugu State",
+      message:
+        "The best thing about DigiPayG2C is that it's in Igbo! My grandmother can now use it comfortably.",
       rating: 5,
     },
     {
-      name: 'Adebayo Johnson',
-      location: 'Oyo State',
-      message: 'Fast, secure, and reliable. DPI has transformed how our community handles money.',
+      name: "Adebayo Johnson",
+      location: "Oyo State",
+      message:
+        "Fast, secure, and reliable. DigiPayG2C has transformed how our community handles money.",
       rating: 5,
     },
   ];
@@ -96,39 +99,51 @@ const Landing = () => {
               className="space-y-6"
             >
               <div className="inline-block px-4 py-2 bg-primary/10 rounded-full text-primary text-sm font-medium">
-                {t('governmentInitiativeBadge')}
+                {t("governmentInitiativeBadge")}
               </div>
               <h1 className="text-4xl md:text-6xl font-bold leading-tight">
-                {t('tagline')}
+                {t("tagline")}
               </h1>
-              <p className="text-lg text-muted-foreground">{t('landingIntro')}</p>
+              <p className="text-lg text-muted-foreground">
+                {t("landingIntro")}
+              </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link to="/register">
                   <Button size="lg" className="w-full sm:w-auto group">
-                    {t('getStarted')}
+                    {t("getStarted")}
                     <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </Link>
                 <Link to="/login">
-                  <Button size="lg" variant="outline" className="w-full sm:w-auto">
-                    {t('login')}
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="w-full sm:w-auto"
+                  >
+                    {t("login")}
                   </Button>
                 </Link>
               </div>
               <div className="flex items-center space-x-6 pt-4">
                 <div>
                   <div className="text-2xl font-bold text-primary">50K+</div>
-                  <div className="text-sm text-muted-foreground">{t('activeUsers')}</div>
+                  <div className="text-sm text-muted-foreground">
+                    {t("activeUsers")}
+                  </div>
                 </div>
                 <div className="h-12 w-px bg-border"></div>
                 <div>
                   <div className="text-2xl font-bold text-primary">₦2.5B+</div>
-                  <div className="text-sm text-muted-foreground">{t('disbursed')}</div>
+                  <div className="text-sm text-muted-foreground">
+                    {t("disbursed")}
+                  </div>
                 </div>
                 <div className="h-12 w-px bg-border"></div>
                 <div>
                   <div className="text-2xl font-bold text-primary">99.9%</div>
-                  <div className="text-sm text-muted-foreground">{t('uptime')}</div>
+                  <div className="text-sm text-muted-foreground">
+                    {t("uptime")}
+                  </div>
                 </div>
               </div>
             </motion.div>
@@ -141,7 +156,7 @@ const Landing = () => {
             >
               <img
                 src={heroImage}
-                alt="DPI Platform"
+                alt="DigiPayG2C Platform"
                 className="rounded-2xl shadow-2xl w-full"
               />
               <div className="absolute -bottom-6 -left-6 bg-card p-4 rounded-xl shadow-lg border border-border">
@@ -150,8 +165,10 @@ const Landing = () => {
                     <CheckCircle className="w-6 h-6 text-success" />
                   </div>
                   <div>
-                    <div className="font-semibold">{t('governmentBacked')}</div>
-                    <div className="text-sm text-muted-foreground">{t('secureGuarantee')}</div>
+                    <div className="font-semibold">{t("governmentBacked")}</div>
+                    <div className="text-sm text-muted-foreground">
+                      {t("secureGuarantee")}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -174,13 +191,13 @@ const Landing = () => {
               variants={itemVariants}
               className="text-3xl md:text-4xl font-bold mb-4"
             >
-              {t('whyChooseDPI')}
+              {t("whyChooseDigiPayG2C")}
             </motion.h2>
             <motion.p
               variants={itemVariants}
               className="text-lg text-muted-foreground max-w-2xl mx-auto"
             >
-              {t('whyChooseDescription')}
+              {t("whyChooseDescription")}
             </motion.p>
           </motion.div>
 
@@ -199,7 +216,9 @@ const Landing = () => {
                       <feature.icon className="w-6 h-6 text-primary" />
                     </div>
                     <h3 className="text-xl font-semibold">{feature.title}</h3>
-                    <p className="text-muted-foreground">{feature.description}</p>
+                    <p className="text-muted-foreground">
+                      {feature.description}
+                    </p>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -218,7 +237,9 @@ const Landing = () => {
               viewport={{ once: true }}
               transition={{ duration: 0.8 }}
             >
-              <h2 className="text-3xl md:text-4xl font-bold mb-6">{t('benefitsTitle')}</h2>
+              <h2 className="text-3xl md:text-4xl font-bold mb-6">
+                {t("benefitsTitle")}
+              </h2>
               <div className="space-y-4">
                 {benefits.map((benefit, index) => (
                   <motion.div
@@ -246,11 +267,15 @@ const Landing = () => {
               <Card className="p-8 bg-gradient-to-br from-primary to-primary-dark text-primary-foreground">
                 <div className="space-y-6">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-2xl font-bold">Your DPI Wallet</h3>
+                    <h3 className="text-2xl font-bold">
+                      Your DigiPayG2C Wallet
+                    </h3>
                     <Wallet className="w-8 h-8" />
                   </div>
                   <div>
-                    <div className="text-sm opacity-90 mb-2">Available Balance</div>
+                    <div className="text-sm opacity-90 mb-2">
+                      Available Balance
+                    </div>
                     <div className="text-4xl font-bold">₦25,000.00</div>
                   </div>
                   <div className="pt-4 border-t border-primary-foreground/20">
@@ -276,8 +301,12 @@ const Landing = () => {
             transition={{ duration: 0.8 }}
             className="text-center mb-16"
           >
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">{t('testimonialsTitle')}</h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">{t('testimonialsSubtitle')}</p>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              {t("testimonialsTitle")}
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              {t("testimonialsSubtitle")}
+            </p>
           </motion.div>
 
           <div className="grid md:grid-cols-3 gap-6">
@@ -293,13 +322,20 @@ const Landing = () => {
                   <CardContent className="p-6 space-y-4">
                     <div className="flex space-x-1">
                       {[...Array(testimonial.rating)].map((_, i) => (
-                        <Star key={i} className="w-5 h-5 fill-primary text-primary" />
+                        <Star
+                          key={i}
+                          className="w-5 h-5 fill-primary text-primary"
+                        />
                       ))}
                     </div>
-                    <p className="text-muted-foreground italic">"{testimonial.message}"</p>
+                    <p className="text-muted-foreground italic">
+                      "{testimonial.message}"
+                    </p>
                     <div>
                       <div className="font-semibold">{testimonial.name}</div>
-                      <div className="text-sm text-muted-foreground">{testimonial.location}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {testimonial.location}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -319,8 +355,8 @@ const Landing = () => {
             transition={{ duration: 0.8 }}
             className="max-w-3xl mx-auto space-y-6"
           >
-            <h2 className="text-3xl md:text-5xl font-bold">{t('ctaTitle')}</h2>
-            <p className="text-xl opacity-90">{t('ctaDescription')}</p>
+            <h2 className="text-3xl md:text-5xl font-bold">{t("ctaTitle")}</h2>
+            <p className="text-xl opacity-90">{t("ctaDescription")}</p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link to="/register">
                 <Button
@@ -328,7 +364,7 @@ const Landing = () => {
                   variant="secondary"
                   className="w-full sm:w-auto group"
                 >
-                  {t('createFreeAccount')}
+                  {t("createFreeAccount")}
                   <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
@@ -338,7 +374,7 @@ const Landing = () => {
                   variant="outline"
                   className="w-full sm:w-auto bg-transparent border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary"
                 >
-                  {t('signIn')}
+                  {t("signIn")}
                 </Button>
               </Link>
             </div>

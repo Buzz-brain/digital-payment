@@ -17,7 +17,7 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 217 33% 17%;
 
-    /* DPI Blue Theme */
+    /* DigiPayG2C Blue Theme */
     --primary: 214 95% 50%;
     --primary-foreground: 0 0% 100%;
     --primary-light: 214 95% 70%;
@@ -50,7 +50,7 @@ All colors MUST be HSL.
 
     --radius: 0.75rem;
     
-    /* DPI Custom */
+    /* DigiPayG2C Custom */
     --gradient-primary: linear-gradient(135deg, hsl(214 95% 50%), hsl(214 95% 35%));
     --gradient-light: linear-gradient(180deg, hsl(0 0% 100%), hsl(210 40% 98%));
     --gradient-elegant: linear-gradient(135deg, hsl(214 95% 50% / 0.1), hsl(214 95% 70% / 0.05));
@@ -117,7 +117,7 @@ All colors MUST be HSL.
     --input: 217 33% 20%;
     --ring: 214 95% 50%;
     
-    /* DPI Custom Dark */
+    /* DigiPayG2C Custom Dark */
     --gradient-primary: linear-gradient(135deg, hsl(214 95% 50%), hsl(214 95% 35%));
     --gradient-light: linear-gradient(180deg, hsl(217 33% 10%), hsl(217 33% 13%));
     --gradient-elegant: linear-gradient(135deg, hsl(214 95% 50% / 0.15), hsl(214 95% 70% / 0.08));

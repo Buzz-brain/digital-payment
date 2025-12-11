@@ -23,8 +23,8 @@ export default function AdminLogin() {
       const success = await login(username, password);
       if (success) {
         toast({
-          title: 'Login Successful',
-          description: 'Welcome to DPI Admin Dashboard',
+          title: "Login Successful",
+          description: "Welcome to DigiPayG2C Admin Dashboard",
         });
         navigate('/admin/dashboard');
       } else {
@@ -59,14 +59,14 @@ export default function AdminLogin() {
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              transition={{ delay: 0.2, type: 'spring' }}
+              transition={{ delay: 0.2, type: "spring" }}
               className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center"
             >
               <Shield className="w-8 h-8 text-primary" />
             </motion.div>
             <CardTitle className="text-2xl">Admin Portal</CardTitle>
             <CardDescription>
-              Sign in to access the DPI Admin Dashboard
+              Sign in to access the DigiPayG2C Admin Dashboard
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -104,18 +104,14 @@ export default function AdminLogin() {
                 </div>
               </div>
 
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={isLoading}
-              >
-                {isLoading ? 'Signing in...' : 'Sign In'}
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? "Signing in..." : "Sign In"}
               </Button>
 
               <div className="text-xs text-center text-muted-foreground mt-4 space-y-1">
                 <p className="font-medium">Demo Credentials (JSON):</p>
                 <pre className="text-xs text-muted-foreground bg-muted/20 p-2 rounded">
-{`{\n  "username": "adminuser",\n  "password": "adminpass"\n}`}
+                  {`{\n  "username": "adminuser",\n  "password": "adminpass"\n}`}
                 </pre>
               </div>
             </form>

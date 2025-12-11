@@ -5,7 +5,7 @@ import { initReactI18next } from 'react-i18next';
 const resources = {
   en: {
     translation: {
-      welcome: "Welcome to DPI",
+      welcome: "Welcome to DigiPayG2C",
       tagline: "Empowering Rural Communities Through Digital Payments",
       getStarted: "Get Started",
       login: "Login",
@@ -104,7 +104,8 @@ const resources = {
       loadingTransactions: "Loading transactions...",
       noTransactionsFound: "No transactions found matching your criteria",
       pollsTitle: "Community Polls",
-      pollsDescription: "Your voice matters! Participate in polls to help shape our policies and services.",
+      pollsDescription:
+        "Your voice matters! Participate in polls to help shape our policies and services.",
       activePolls: "Active Polls",
       closedPolls: "Closed Polls",
       ends: "Ends",
@@ -143,7 +144,8 @@ const resources = {
       address: "Address",
       tribe: "Tribe",
       na: "N/A",
-      ninInfoNotice: "This information is sourced from your verified NIN record and cannot be edited here. Contact support if updates are needed.",
+      ninInfoNotice:
+        "This information is sourced from your verified NIN record and cannot be edited here. Contact support if updates are needed.",
       profileUpdated: "Profile updated successfully",
       saving: "Saving...",
       updating: "Updating...",
@@ -161,7 +163,8 @@ const resources = {
       confirmTransferTitle: "Confirm Transfer",
       confirmTransferAboutPrefix: "You're about to send",
       confirmTransferTo: "to",
-      confirmTransferWarning: "This action cannot be undone. Please confirm you want to proceed.",
+      confirmTransferWarning:
+        "This action cannot be undone. Please confirm you want to proceed.",
       confirm: "Confirm",
       withdrawalMethod: "Withdrawal Method",
       selectMethodPlaceholder: "Select method",
@@ -175,9 +178,11 @@ const resources = {
       accountNumber: "Account Number",
       accountNumberPlaceholder: "Enter account number",
       confirmWithdrawalTitle: "Confirm Withdrawal",
-      confirmWithdrawalDesc: "You are about to withdraw ₦{{amount}}. This action may take some time to process. Do you want to continue?",
+      confirmWithdrawalDesc:
+        "You are about to withdraw ₦{{amount}}. This action may take some time to process. Do you want to continue?",
       withdrawalFailed: "Withdrawal failed",
-      withdrawalRequestSuccess: "Successfully requested withdrawal of ₦{{amount}}",
+      withdrawalRequestSuccess:
+        "Successfully requested withdrawal of ₦{{amount}}",
       category: "Category",
       selectCategoryPlaceholder: "Select category",
       technicalIssue: "Technical Issue",
@@ -194,7 +199,8 @@ const resources = {
       submitting: "Submitting...",
       submitFeedback: "Submit Feedback",
       feedbackHistoryTitle: "Your Feedback History",
-      feedbackHistoryDescription: "View all your submissions and admin responses",
+      feedbackHistoryDescription:
+        "View all your submissions and admin responses",
       loadingFeedback: "Loading your feedback...",
       noFeedbackYet: "No feedback submitted yet",
       adminResponseLabel: "Admin Response:",
@@ -202,7 +208,8 @@ const resources = {
       reviewed: "Reviewed",
       resolved: "Resolved",
       governmentInitiativeBadge: "Government Initiative",
-      landingIntro: "Join thousands of Nigerians accessing secure digital payments, government disbursements, and financial services - all from your mobile device.",
+      landingIntro:
+        "Join thousands of Nigerians accessing secure digital payments, government disbursements, and financial services - all from your mobile device.",
       activeUsers: "Active Users",
       disbursed: "Disbursed",
       uptime: "Uptime",
@@ -219,45 +226,54 @@ const resources = {
         terms: "Terms of Service",
         security: "Security",
         contactUs: "Contact Us",
-        contactEmail: "support@dpi.gov.ng",
+        contactEmail: "support@DigiPayG2C.gov.ng",
         contactPhone: "+234 800 123 4567",
         contactAddress: "Abuja, Nigeria",
-        rights: "© 2025 Digital Payment Initiative. All rights reserved. Powered by the Federal Government of Nigeria.",
+        rights:
+          "© 2025 Digital Payment Initiative. All rights reserved. Powered by the Federal Government of Nigeria.",
       },
       feature: {
         secure: {
           title: "Secure & Safe",
-          description: "Bank-level security with government backing ensures your money is always protected.",
+          description:
+            "Bank-level security with government backing ensures your money is always protected.",
         },
         payments: {
           title: "Easy Payments",
-          description: "Send and receive money instantly with just a few taps on your phone.",
+          description:
+            "Send and receive money instantly with just a few taps on your phone.",
         },
         community: {
           title: "Community First",
-          description: "Built specifically for rural communities with local language support.",
+          description:
+            "Built specifically for rural communities with local language support.",
         },
         growth: {
           title: "Financial Growth",
-          description: "Access government disbursements and grow your financial independence.",
+          description:
+            "Access government disbursements and grow your financial independence.",
         },
       },
       benefitsTitle: "Everything You Need for Financial Freedom",
-      'benefit.noMinBalance': "No minimum balance required",
-      'benefit.freeRegistration': "Free registration with NIN",
-      'benefit.instantDisbursements': "Instant government disbursements",
-      'benefit.localLanguageSupport': "Support in local languages",
-      'benefit.anyDevice': "Works on any mobile device",
-      'benefit.support247': "24/7 customer support",
-      whyChooseDPI: "Why Choose DPI?",
-      whyChooseDescription: "Built by Nigerians, for Nigerians. DPI provides secure, accessible digital payment solutions for everyone.",
+      "benefit.noMinBalance": "No minimum balance required",
+      "benefit.freeRegistration": "Free registration with NIN",
+      "benefit.instantDisbursements": "Instant government disbursements",
+      "benefit.localLanguageSupport": "Support in local languages",
+      "benefit.anyDevice": "Works on any mobile device",
+      "benefit.support247": "24/7 customer support",
+      whyChooseDigiPayG2C: "Why Choose DigiPayG2C?",
+      whyChooseDescription:
+        "Built by Nigerians, for Nigerians. DigiPayG2C provides secure, accessible digital payment solutions for everyone.",
       testimonialsTitle: "Trusted by Communities Across Nigeria",
-      testimonialsSubtitle: "See what our users have to say about their DPI experience",
+      testimonialsSubtitle:
+        "See what our users have to say about their DigiPayG2C experience",
       ctaTitle: "Ready to Get Started?",
-      ctaDescription: "Join thousands of Nigerians already using DPI for secure, convenient digital payments",
+      ctaDescription:
+        "Join thousands of Nigerians already using DigiPayG2C for secure, convenient digital payments",
       createFreeAccount: "Create Free Account",
       signIn: "Sign In",
-      loginDescription: "Enter your credentials to access your DPI account",
+      loginDescription:
+        "Enter your credentials to access your DigiPayG2C account",
       identifierLabel: "NIN or Username",
       identifierPlaceholder: "12345678901 or username",
       identifierHelp: "Enter your 11-digit NIN or your username",
@@ -280,7 +296,8 @@ const resources = {
       },
       ninRegister: {
         title: "Register NIN",
-        notice: "We couldn't find your NIN. Complete this form to register your NIN in the system. An admin will verify it.",
+        notice:
+          "We couldn't find your NIN. Complete this form to register your NIN in the system. An admin will verify it.",
         ninLabel: "NIN",
         fullName: "Full name",
         email: "Email",
@@ -304,12 +321,11 @@ const resources = {
           phone: "Valid phone number is required",
         },
       },
-
     },
   },
   ha: {
     translation: {
-      welcome: "Barka da zuwa DPI",
+      welcome: "Barka da zuwa DigiPayG2C",
       tagline: "Ƙarfafa Al'ummomin Ƙauye ta Hanyar Biyan Kuɗi na Dijital",
       getStarted: "Fara",
       login: "Shiga",
@@ -351,7 +367,8 @@ const resources = {
       loadingTransactions: "Ana ɗaukar ma'amaloli...",
       noTransactionsFound: "Babu ma'amaloli da suka dace da ka'idojin ku",
       pollsTitle: "Tambayoyin Al'umma",
-      pollsDescription: "Muryarka na da muhimmanci! Shiga cikin tambayoyi don taimakawa tsara manufofi da ayyukanmu.",
+      pollsDescription:
+        "Muryarka na da muhimmanci! Shiga cikin tambayoyi don taimakawa tsara manufofi da ayyukanmu.",
       activePolls: "Tambayoyi Masu Aiki",
       closedPolls: "Tambayoyi Masu Rufe",
       ends: "Ƙarewa",
@@ -390,7 +407,8 @@ const resources = {
       address: "Adireshi",
       tribe: "Kabila",
       na: "N/A",
-      ninInfoNotice: "Wannan bayanin an samo shi daga rikodin NIN ɗinku da aka tabbatar kuma ba za a iya gyara shi anan ba. Tuntuɓi tallafi idan ana buƙatar sabuntawa.",
+      ninInfoNotice:
+        "Wannan bayanin an samo shi daga rikodin NIN ɗinku da aka tabbatar kuma ba za a iya gyara shi anan ba. Tuntuɓi tallafi idan ana buƙatar sabuntawa.",
       profileUpdated: "An sabunta bayanin martaba cikin nasara",
       saving: "Ana ajiye...",
       updating: "Ana sabuntawa...",
@@ -408,7 +426,8 @@ const resources = {
       confirmTransferTitle: "Tabbatar da Canja Wurin",
       confirmTransferAboutPrefix: "Kuna shirin aikawa",
       confirmTransferTo: "zuwa",
-      confirmTransferWarning: "Wannan aikin ba za a iya mayar da shi ba. Don Allah tabbatar kuna son ci gaba.",
+      confirmTransferWarning:
+        "Wannan aikin ba za a iya mayar da shi ba. Don Allah tabbatar kuna son ci gaba.",
       confirm: "Tabbatar",
       withdrawalMethod: "Hanyar Cire Kuɗi",
       selectMethodPlaceholder: "Zaɓi hanyar",
@@ -422,7 +441,8 @@ const resources = {
       accountNumber: "Lambar Asusun",
       accountNumberPlaceholder: "Shigar da lambar asusun",
       confirmWithdrawalTitle: "Tabbatar da Cire Kuɗi",
-      confirmWithdrawalDesc: "Kuna shirin cire ₦{{amount}}. Wannan aikin na iya ɗaukar ɗan lokaci. Kuna son ci gaba?",
+      confirmWithdrawalDesc:
+        "Kuna shirin cire ₦{{amount}}. Wannan aikin na iya ɗaukar ɗan lokaci. Kuna son ci gaba?",
       withdrawalFailed: "Cire kuɗi ya kasa",
       withdrawalRequestSuccess: "An nemi cire ₦{{amount}} cikin nasara",
       category: "Rukuni",
@@ -441,7 +461,8 @@ const resources = {
       submitting: "Ana aika...",
       submitFeedback: "Aika Ra'ayi",
       feedbackHistoryTitle: "Tarihin Ra'ayinku",
-      feedbackHistoryDescription: "Duba duk abin da kuka gabatar da martanin admin",
+      feedbackHistoryDescription:
+        "Duba duk abin da kuka gabatar da martanin admin",
       loadingFeedback: "Ana ɗaukar ra'ayinku...",
       noFeedbackYet: "Babu ra'ayi da aka gabatar tukuna",
       adminResponseLabel: "Martanin Admin:",
@@ -449,7 +470,8 @@ const resources = {
       reviewed: "An duba",
       resolved: "An warware",
       governmentInitiativeBadge: "Shirin Gwamnati",
-      landingIntro: "Haɗu da dubban 'yan Najeriya da ke samun ingantattun biyan kuɗi na dijital, rarraba gwamnati, da ayyukan kuɗi - duka daga na'urarka ta hannu.",
+      landingIntro:
+        "Haɗu da dubban 'yan Najeriya da ke samun ingantattun biyan kuɗi na dijital, rarraba gwamnati, da ayyukan kuɗi - duka daga na'urarka ta hannu.",
       activeUsers: "Masu Amfani",
       disbursed: "An Rarraba",
       uptime: "Lokacin Aiki",
@@ -466,23 +488,27 @@ const resources = {
         terms: "Sharuɗɗan Sabis",
         security: "Tsaro",
         contactUs: "Tuntuɓi Mu",
-        contactEmail: "support@dpi.gov.ng",
+        contactEmail: "support@DigiPayG2C.gov.ng",
         contactPhone: "+234 800 123 4567",
         contactAddress: "Abuja, Najeriya",
-        rights: "© 2025 Digital Payment Initiative. Duk haƙƙoƙi an tanada. Tare da goyon bayan Gwamnatin Tarayya na Najeriya.",
+        rights:
+          "© 2025 Digital Payment Initiative. Duk haƙƙoƙi an tanada. Tare da goyon bayan Gwamnatin Tarayya na Najeriya.",
       },
       feature: {
         secure: {
           title: "Tsaro & Aminci",
-          description: "Tsaron matakin banki tare da tallafin gwamnati yana tabbatar da cewa kuɗin ku koyaushe yana cikin aminci.",
+          description:
+            "Tsaron matakin banki tare da tallafin gwamnati yana tabbatar da cewa kuɗin ku koyaushe yana cikin aminci.",
         },
         payments: {
           title: "Sauƙin Biyan Kuɗi",
-          description: "Aika da karɓi kuɗi nan take tare da dannawa kaɗan a wayarka.",
+          description:
+            "Aika da karɓi kuɗi nan take tare da dannawa kaɗan a wayarka.",
         },
         community: {
           title: "Al'umma Farko",
-          description: "An gina musamman don al'ummomin karkara tare da tallafin harsuna na gida.",
+          description:
+            "An gina musamman don al'ummomin karkara tare da tallafin harsuna na gida.",
         },
         growth: {
           title: "Ci gaban Kuɗi",
@@ -490,21 +516,25 @@ const resources = {
         },
       },
       benefitsTitle: "Duk Abin Da Kuke Bukata Don 'Yancin Kuɗi",
-      'benefit.noMinBalance': "Babu buƙatar adadin ƙasa",
-      'benefit.freeRegistration': "Rajista kyauta tare da NIN",
-      'benefit.instantDisbursements': "Rarraba gwamnati nan take",
-      'benefit.localLanguageSupport': "Tallafi a cikin harsunan gida",
-      'benefit.anyDevice': "Yana aiki a kowace na'urar hannu",
-      'benefit.support247': "Tallafi 24/7",
-      whyChooseDPI: "Me yasa zabar DPI?",
-      whyChooseDescription: "An gina ta 'yan Najeriya, don 'yan Najeriya. DPI yana samar da hanyoyin biyan kuɗi na dijital masu aminci da sauƙi ga kowa.",
+      "benefit.noMinBalance": "Babu buƙatar adadin ƙasa",
+      "benefit.freeRegistration": "Rajista kyauta tare da NIN",
+      "benefit.instantDisbursements": "Rarraba gwamnati nan take",
+      "benefit.localLanguageSupport": "Tallafi a cikin harsunan gida",
+      "benefit.anyDevice": "Yana aiki a kowace na'urar hannu",
+      "benefit.support247": "Tallafi 24/7",
+      whyChooseDigiPayG2C: "Me yasa zabar DigiPayG2C?",
+      whyChooseDescription:
+        "An gina ta 'yan Najeriya, don 'yan Najeriya. DigiPayG2C yana samar da hanyoyin biyan kuɗi na dijital masu aminci da sauƙi ga kowa.",
       testimonialsTitle: "Amintattun ta Al'ummomi A Fadin Najeriya",
-      testimonialsSubtitle: "Duba abin da masu amfani da mu suke faɗi game da ƙwarewar su tare da DPI",
+      testimonialsSubtitle:
+        "Duba abin da masu amfani da mu suke faɗi game da ƙwarewar su tare da DigiPayG2C",
       ctaTitle: "Shirye don Fara?",
-      ctaDescription: "Shiga dubban 'yan Najeriya da ke amfani da DPI don biyan kuɗi na dijital masu aminci da dacewa",
+      ctaDescription:
+        "Shiga dubban 'yan Najeriya da ke amfani da DigiPayG2C don biyan kuɗi na dijital masu aminci da dacewa",
       createFreeAccount: "Ƙirƙiri Asusun Kyauta",
       signIn: "Shiga",
-      loginDescription: "Shigar da bayanan shiga don samun damar asusun DPI dinku",
+      loginDescription:
+        "Shigar da bayanan shiga don samun damar asusun DigiPayG2C dinku",
       identifierLabel: "NIN ko Sunan Mai Amfani",
       identifierPlaceholder: "12345678901 ko sunan mai amfani",
       identifierHelp: "Shigar da NIN mai lamba 11 ko sunan mai amfani",
@@ -527,7 +557,8 @@ const resources = {
       },
       ninRegister: {
         title: "Yi Rajistar NIN",
-        notice: "Ba za mu iya samun NIN ɗinku ba. Cika wannan fom don yin rajistar NIN ɗinku a tsarin. Za a bincika shi ta admin.",
+        notice:
+          "Ba za mu iya samun NIN ɗinku ba. Cika wannan fom don yin rajistar NIN ɗinku a tsarin. Za a bincika shi ta admin.",
         ninLabel: "NIN",
         fullName: "Cikakken suna",
         email: "Imel",
@@ -555,7 +586,7 @@ const resources = {
   },
   yo: {
     translation: {
-      welcome: "Káàbọ̀ sí DPI",
+      welcome: "Káàbọ̀ sí DigiPayG2C",
       tagline: "Ń mú àwọn Àgbègbè Ìgbèrìko Lágbára Nípasẹ̀ Ìsanwó Dígíítì",
       getStarted: "Bẹ̀rẹ̀",
       login: "Wọlé",
@@ -597,7 +628,8 @@ const resources = {
       loadingTransactions: "Nnkan nlọ… n gba awọn iṣowo...",
       noTransactionsFound: "Kò si awọn iṣowo ti o baamu awọn ọna rẹ",
       pollsTitle: "Idibo Agbegbe",
-      pollsDescription: "Ohùn rẹ ṣe pataki! Kopa ninu awọn idibo lati ṣe apẹrẹ awọn ilana ati awọn iṣẹ wa.",
+      pollsDescription:
+        "Ohùn rẹ ṣe pataki! Kopa ninu awọn idibo lati ṣe apẹrẹ awọn ilana ati awọn iṣẹ wa.",
       activePolls: "Idibo Ti nṣiṣẹ",
       closedPolls: "Idibo Ti a Pa",
       ends: "Pari",
@@ -636,7 +668,8 @@ const resources = {
       address: "Adirẹsi",
       tribe: "Ẹ̀yà",
       na: "N/A",
-      ninInfoNotice: "Alaye yii ti wa lati igbasilẹ NIN ti a fọwọsi ati pe a ko le satunkọ rẹ nibi. Kan si atilẹyin ti imudojuiwọn ba nilo.",
+      ninInfoNotice:
+        "Alaye yii ti wa lati igbasilẹ NIN ti a fọwọsi ati pe a ko le satunkọ rẹ nibi. Kan si atilẹyin ti imudojuiwọn ba nilo.",
       profileUpdated: "A ti ṣe imudojuiwọn profaili ni aṣeyọri",
       saving: "Fipamọ...",
       updating: "Nbọ imudojuiwọn...",
@@ -654,7 +687,8 @@ const resources = {
       confirmTransferTitle: "Jẹrisi Gbigbe",
       confirmTransferAboutPrefix: "O n lọ lati fi",
       confirmTransferTo: "si",
-      confirmTransferWarning: "Ẹsẹ yii ko le yipada. Jọwọ jẹrisi pe o fẹ tẹsiwaju.",
+      confirmTransferWarning:
+        "Ẹsẹ yii ko le yipada. Jọwọ jẹrisi pe o fẹ tẹsiwaju.",
       confirm: "Jẹrisi",
       withdrawalMethod: "Ọna Yiyọ",
       selectMethodPlaceholder: "Yan ọna",
@@ -668,7 +702,8 @@ const resources = {
       accountNumber: "Nọmba iroyin",
       accountNumberPlaceholder: "Tẹ nọmba iroyin",
       confirmWithdrawalTitle: "Jẹrisi Yiyọ",
-      confirmWithdrawalDesc: "O n lọ lati yọ ₦{{amount}}. Iṣe yii le gba akoko diẹ lati ṣe. Ṣe o fẹ tẹsiwaju?",
+      confirmWithdrawalDesc:
+        "O n lọ lati yọ ₦{{amount}}. Iṣe yii le gba akoko diẹ lati ṣe. Ṣe o fẹ tẹsiwaju?",
       withdrawalFailed: "Yiyọ kuna",
       withdrawalRequestSuccess: "A ti beere yiyọ ₦{{amount}} ni aṣeyọri",
       category: "Ọmọ ẹgbẹ",
@@ -687,7 +722,8 @@ const resources = {
       submitting: "Nfiranṣẹ...",
       submitFeedback: "Firanṣẹ Esi",
       feedbackHistoryTitle: "Itan Esi Rẹ",
-      feedbackHistoryDescription: "Wo gbogbo awọn ifisilẹ rẹ ati awọn idahun admin",
+      feedbackHistoryDescription:
+        "Wo gbogbo awọn ifisilẹ rẹ ati awọn idahun admin",
       loadingFeedback: "N n jẹkọ awọn esi rẹ...",
       noFeedbackYet: "Ko si esi ti a fi silẹ sibẹsibẹ",
       adminResponseLabel: "Idahun Admin:",
@@ -695,7 +731,8 @@ const resources = {
       reviewed: "Ti ṣayẹwo",
       resolved: "Ti yanju",
       governmentInitiativeBadge: "Iṣẹ Ijọba",
-      landingIntro: "Darapọ mọ ẹgbẹẹgbẹrun awọn ara Naijiria ti n wọle si isanwo oni-nọmba to ni aabo, pinpin ijọba, ati awọn iṣẹ inawo - gbogbo lati ẹrọ alagbeka rẹ.",
+      landingIntro:
+        "Darapọ mọ ẹgbẹẹgbẹrun awọn ara Naijiria ti n wọle si isanwo oni-nọmba to ni aabo, pinpin ijọba, ati awọn iṣẹ inawo - gbogbo lati ẹrọ alagbeka rẹ.",
       activeUsers: "Awọn olumulo Ti Nṣiṣe",
       disbursed: "Ti pin",
       uptime: "Akoko Iṣiṣẹ",
@@ -712,23 +749,27 @@ const resources = {
         terms: "Awọn ofin iṣẹ",
         security: "Aabo",
         contactUs: "Kan si Wa",
-        contactEmail: "support@dpi.gov.ng",
+        contactEmail: "support@DigiPayG2C.gov.ng",
         contactPhone: "+234 800 123 4567",
         contactAddress: "Abuja, Naijiria",
-        rights: "© 2025 Digital Payment Initiative. Gbogbo awọn ẹtọ wa. Ti pese nipasẹ Ijọba Apapọ ti Naijiria.",
+        rights:
+          "© 2025 Digital Payment Initiative. Gbogbo awọn ẹtọ wa. Ti pese nipasẹ Ijọba Apapọ ti Naijiria.",
       },
       feature: {
         secure: {
           title: "Aabo & Ailewu",
-          description: "Aabo ipele-ifowopamọ pẹlu atilẹyin ijọba jẹri pe owo rẹ wa ni aabo nigbagbogbo.",
+          description:
+            "Aabo ipele-ifowopamọ pẹlu atilẹyin ijọba jẹri pe owo rẹ wa ni aabo nigbagbogbo.",
         },
         payments: {
           title: "Ìsanwó Rọrun",
-          description: "Firanṣẹ ati gba owo lẹsẹkẹsẹ pẹlu awọn ifọwọkan diẹ lori foonu rẹ.",
+          description:
+            "Firanṣẹ ati gba owo lẹsẹkẹsẹ pẹlu awọn ifọwọkan diẹ lori foonu rẹ.",
         },
         community: {
           title: "Agbegbe Ni Ibẹrẹ",
-          description: "Ti a kọ pataki fun awọn agbegbe igberiko pẹlu atilẹyin ede abinibi.",
+          description:
+            "Ti a kọ pataki fun awọn agbegbe igberiko pẹlu atilẹyin ede abinibi.",
         },
         growth: {
           title: "Idagbasoke Owo",
@@ -736,21 +777,24 @@ const resources = {
         },
       },
       benefitsTitle: "Gbogbo Ohun Ti O Nilo fun Ominira Iṣuna",
-      'benefit.noMinBalance': "Ko si iwọntunwọnsi kere ti a beere",
-      'benefit.freeRegistration': "Iforukọsilẹ ọfẹ pẹlu NIN",
-      'benefit.instantDisbursements': "Pinpin ijọba lẹsẹkẹsẹ",
-      'benefit.localLanguageSupport': "Atilẹyin ninu awọn ede agbegbe",
-      'benefit.anyDevice': "Ṣiṣẹ lori eyikeyi ẹrọ alagbeka",
-      'benefit.support247': "Atilẹyin 24/7",
-      whyChooseDPI: "Kí nìdí yó fi yan DPI?",
-      whyChooseDescription: "Ti a kọ nipasẹ awọn ara Naijiria, fun awọn ara Naijiria. DPI n pese awọn solusan isanwo oni-nọmba to ni aabo ati wiwọle fun gbogbo eniyan.",
+      "benefit.noMinBalance": "Ko si iwọntunwọnsi kere ti a beere",
+      "benefit.freeRegistration": "Iforukọsilẹ ọfẹ pẹlu NIN",
+      "benefit.instantDisbursements": "Pinpin ijọba lẹsẹkẹsẹ",
+      "benefit.localLanguageSupport": "Atilẹyin ninu awọn ede agbegbe",
+      "benefit.anyDevice": "Ṣiṣẹ lori eyikeyi ẹrọ alagbeka",
+      "benefit.support247": "Atilẹyin 24/7",
+      whyChooseDigiPayG2C: "Kí nìdí yó fi yan DigiPayG2C?",
+      whyChooseDescription:
+        "Ti a kọ nipasẹ awọn ara Naijiria, fun awọn ara Naijiria. DigiPayG2C n pese awọn solusan isanwo oni-nọmba to ni aabo ati wiwọle fun gbogbo eniyan.",
       testimonialsTitle: "Gbẹkẹle nipasẹ Awọn Agbegbe Kaakiri Naijiria",
-      testimonialsSubtitle: "Wo ohun ti awọn olumulo wa sọ nipa iriri DPI wọn",
+      testimonialsSubtitle:
+        "Wo ohun ti awọn olumulo wa sọ nipa iriri DigiPayG2C wọn",
       ctaTitle: "Ṣetan lati Bẹrẹ?",
-      ctaDescription: "Darapọ mọ ẹgbẹẹgbẹrun awọn ara Naijiria ti n lo DPI fun awọn isanwo oni-nọmba to ni aabo ati itunu",
+      ctaDescription:
+        "Darapọ mọ ẹgbẹẹgbẹrun awọn ara Naijiria ti n lo DigiPayG2C fun awọn isanwo oni-nọmba to ni aabo ati itunu",
       createFreeAccount: "Ṣẹda Àkọọlẹ Ọfẹ",
       signIn: "Wọlé",
-      loginDescription: "Tẹ awọn iwe-ẹri rẹ lati wọle si iroyin DPI rẹ",
+      loginDescription: "Tẹ awọn iwe-ẹri rẹ lati wọle si iroyin DigiPayG2C rẹ",
       identifierLabel: "NIN tabi Orukọ olumulo",
       identifierPlaceholder: "12345678901 tabi orukọ olumulo",
       identifierHelp: "Tẹ Nọmba NIN 11-dijiiti rẹ tabi orukọ olumulo rẹ",
@@ -773,7 +817,8 @@ const resources = {
       },
       ninRegister: {
         title: "Forúkọsílẹ̀ NIN",
-        notice: "A kò rí NIN rẹ. Ṣe fọọmu yii lati forukọsilẹ NIN rẹ ninu eto. Alákóso yoo jẹrisi rẹ.",
+        notice:
+          "A kò rí NIN rẹ. Ṣe fọọmu yii lati forukọsilẹ NIN rẹ ninu eto. Alákóso yoo jẹrisi rẹ.",
         ninLabel: "NIN",
         fullName: "Orukọ kikun",
         email: "Imeeli",
@@ -788,7 +833,8 @@ const resources = {
         tribe: "Ẹbí",
         submit: "Forúkọsílẹ̀ NIN",
         successTitle: "NIN Ti Forúkọsílẹ̀",
-        successDesc: "A ti forúkọsílẹ̀ NIN ni aṣeyọri ati pe o n duro de ìmúdájú.",
+        successDesc:
+          "A ti forúkọsílẹ̀ NIN ni aṣeyọri ati pe o n duro de ìmúdájú.",
         failTitle: "Forúkọsílẹ̀ Kọja",
         validation: {
           nin: "NIN yẹ ki o jẹ awọn nọmba 11",
@@ -801,7 +847,7 @@ const resources = {
   },
   ig: {
     translation: {
-      welcome: "Nnọọ na DPI",
+      welcome: "Nnọọ na DigiPayG2C",
       tagline: "Na-enye Obodo Ime Obodo Ike Site na Ịkwụ Ụgwọ Dijitalụ",
       getStarted: "Malite",
       login: "Banye",
@@ -843,7 +889,8 @@ const resources = {
       loadingTransactions: "Na-ebubata azụmahịa...",
       noTransactionsFound: "Enweghị azụmahịa ziri ezi dabara na ihe achọrọ gị",
       pollsTitle: "Ajụjụ Ọha",
-      pollsDescription: "Ụzọ gị dị mkpa! Sonye na ajụjụ iji nyere aka ịmepụta usoro na ọrụ anyị.",
+      pollsDescription:
+        "Ụzọ gị dị mkpa! Sonye na ajụjụ iji nyere aka ịmepụta usoro na ọrụ anyị.",
       activePolls: "Ajụjụ Na-eme",
       closedPolls: "Ajụjụ Mechiri",
       ends: "Agwụla",
@@ -882,7 +929,8 @@ const resources = {
       address: "Adreesị",
       tribe: "Ezinụlọ",
       na: "N/A",
-      ninInfoNotice: "A na-ebute ozi a site na ndekọ NIN gị kwadoro ma enweghi ike dezie ya ebe a. Kpọtụrụ nkwado ma ọ bụrụ na achọrọ mmelite.",
+      ninInfoNotice:
+        "A na-ebute ozi a site na ndekọ NIN gị kwadoro ma enweghi ike dezie ya ebe a. Kpọtụrụ nkwado ma ọ bụrụ na achọrọ mmelite.",
       profileUpdated: "Emeela emelitere profaịlụ nke ọma",
       saving: "Na-echekwa...",
       updating: "Na-emelite...",
@@ -900,7 +948,8 @@ const resources = {
       confirmTransferTitle: "Kwenye Nyefe",
       confirmTransferAboutPrefix: "Ị na-aga iziga",
       confirmTransferTo: "na",
-      confirmTransferWarning: "A naghị atụgharị omume a. Biko kwado ma ịchọrọ ịga n'ihu.",
+      confirmTransferWarning:
+        "A naghị atụgharị omume a. Biko kwado ma ịchọrọ ịga n'ihu.",
       confirm: "Kwenye",
       withdrawalMethod: "Ụzọ Wepụ Ego",
       selectMethodPlaceholder: "Họrọ ụzọ",
@@ -914,7 +963,8 @@ const resources = {
       accountNumber: "Nọmba Akaụntụ",
       accountNumberPlaceholder: "Tinye nọmba akaụntụ",
       confirmWithdrawalTitle: "Kwenye Wepụ Ego",
-      confirmWithdrawalDesc: "Ị na-aga wepụ ₦{{amount}}. Ọrụ a nwere ike were oge. Ị chọrọ ịga n'ihu?",
+      confirmWithdrawalDesc:
+        "Ị na-aga wepụ ₦{{amount}}. Ọrụ a nwere ike were oge. Ị chọrọ ịga n'ihu?",
       withdrawalFailed: "Wepụ ego dara",
       withdrawalRequestSuccess: "Arịrịọ wepụ ₦{{amount}} gara nke ọma",
       category: "Ndị otu",
@@ -927,7 +977,8 @@ const resources = {
       message: "Ozi",
       messagePlaceholder: "Kekọrịta nzaghachi gị...",
       fillAllFields: "Biko jupụta ubi niile",
-      feedbackThankYou: "Daalụ maka nzaghachi gị! Anyị ga-enyocha ya n'oge adịghị anya.",
+      feedbackThankYou:
+        "Daalụ maka nzaghachi gị! Anyị ga-enyocha ya n'oge adịghị anya.",
       feedbackSubmitFailed: "Enweghị ike iziga nzaghachi",
       feedbackFetchFailed: "Enweghị ike ibughachi akụkọ nzaghachi",
       submitting: "Na-eziga...",
@@ -941,7 +992,8 @@ const resources = {
       reviewed: "E nyochala",
       resolved: "E dozie",
       governmentInitiativeBadge: "Mmemme Gọọmenti",
-      landingIntro: "Soro puku ndị Naijiria na-enweta ịkwụ ụgwọ dijitalụ nchebe, nkesa gọọmenti, na ọrụ ego - niile site na ekwentị gị.",
+      landingIntro:
+        "Soro puku ndị Naijiria na-enweta ịkwụ ụgwọ dijitalụ nchebe, nkesa gọọmenti, na ọrụ ego - niile site na ekwentị gị.",
       activeUsers: "Ndị ọrụ na-arụ ọrụ",
       disbursed: "Ejikọrọ Ego",
       uptime: "Oge Ọrụ",
@@ -958,19 +1010,22 @@ const resources = {
         terms: "Okwu Ọrụ",
         security: "Nchedo",
         contactUs: "Kpọtụrụ Anyị",
-        contactEmail: "support@dpi.gov.ng",
+        contactEmail: "support@DigiPayG2C.gov.ng",
         contactPhone: "+234 800 123 4567",
         contactAddress: "Abuja, Naịjirịa",
-        rights: "© 2025 Digital Payment Initiative. Ebe nchekwa ikike niile. Nkwado site na Gọọmenti Federal nke Naịjịria.",
+        rights:
+          "© 2025 Digital Payment Initiative. Ebe nchekwa ikike niile. Nkwado site na Gọọmenti Federal nke Naịjịria.",
       },
       feature: {
         secure: {
           title: "Nche & Nchekwa",
-          description: "Nchekwa ọkwa bankị na nkwado gọọmenti na-eme ka ego gị dị nchebe mgbe niile.",
+          description:
+            "Nchekwa ọkwa bankị na nkwado gọọmenti na-eme ka ego gị dị nchebe mgbe niile.",
         },
         payments: {
           title: "Ịkwụ Ọrụ Dị mfe",
-          description: "Zipu ma nata ego ozugbo na ịpịtụ ole na ole na ekwentị gị.",
+          description:
+            "Zipu ma nata ego ozugbo na ịpịtụ ole na ole na ekwentị gị.",
         },
         community: {
           title: "Obodo Mbụ",
@@ -982,24 +1037,28 @@ const resources = {
         },
       },
       benefitsTitle: "Ihe niile ịchọrọ maka Nnwere onwe Ego",
-      'benefit.noMinBalance': "Enweghị ihe kacha nta achọrọ",
-      'benefit.freeRegistration': "Ndebanye aha efu na NIN",
-      'benefit.instantDisbursements': "Nkesa gọọmenti ozugbo",
-      'benefit.localLanguageSupport': "Nkwado n'asụsụ mpaghara",
-      'benefit.anyDevice': "Na-arụ ọrụ na ngwaọrụ ọ bụla",
-      'benefit.support247': "Nkwado 24/7",
-      whyChooseDPI: "Gịnị mere ịhọrọ DPI?",
-      whyChooseDescription: "E wuru ya site n'aka ndị Naijiria, maka ndị Naijiria. DPI na-enye ngwọta ịkwụ ụgwọ dijitalụ echekwara ma dị mfe maka onye ọ bụla.",
+      "benefit.noMinBalance": "Enweghị ihe kacha nta achọrọ",
+      "benefit.freeRegistration": "Ndebanye aha efu na NIN",
+      "benefit.instantDisbursements": "Nkesa gọọmenti ozugbo",
+      "benefit.localLanguageSupport": "Nkwado n'asụsụ mpaghara",
+      "benefit.anyDevice": "Na-arụ ọrụ na ngwaọrụ ọ bụla",
+      "benefit.support247": "Nkwado 24/7",
+      whyChooseDigiPayG2C: "Gịnị mere ịhọrọ DigiPayG2C?",
+      whyChooseDescription:
+        "E wuru ya site n'aka ndị Naijiria, maka ndị Naijiria. DigiPayG2C na-enye ngwọta ịkwụ ụgwọ dijitalụ echekwara ma dị mfe maka onye ọ bụla.",
       testimonialsTitle: "A na-akwanyere ùgwù site na Obodo n'ofe Naijiria",
-      testimonialsSubtitle: "Lee ihe ndị ọrụ anyị na-ekwu banyere ahụmịhe ha na DPI",
+      testimonialsSubtitle:
+        "Lee ihe ndị ọrụ anyị na-ekwu banyere ahụmịhe ha na DigiPayG2C",
       ctaTitle: "Ị kwadebere Iji Malite?",
-      ctaDescription: "Soro puku ndị Naijiria na-eji DPI maka ịkwụ ụgwọ dijitalụ echekwara na nke dị mfe",
+      ctaDescription:
+        "Soro puku ndị Naijiria na-eji DigiPayG2C maka ịkwụ ụgwọ dijitalụ echekwara na nke dị mfe",
       createFreeAccount: "Mepụta Akaụntụ N'efu",
       signIn: "Banyere",
-      loginDescription: "Tinye nkwukọrịta gị iji nweta akaụntụ DPI gị",
+      loginDescription: "Tinye nkwukọrịta gị iji nweta akaụntụ DigiPayG2C gị",
       identifierLabel: "NIN ma ọ bụ Aha njirimara",
       identifierPlaceholder: "12345678901 ma ọ bụ aha njirimara",
-      identifierHelp: "Tinye Nọmba NIN gị nke nwere mkpụrụ 11 ma ọ bụ aha njirimara gị",
+      identifierHelp:
+        "Tinye Nọmba NIN gị nke nwere mkpụrụ 11 ma ọ bụ aha njirimara gị",
       passwordPlaceholder: "Tinye okwuntughe gị",
       missingIdentifierTitle: "Ebe edepụtara adịghị",
       missingIdentifierDesc: "Tinye NIN gị ma ọ bụ aha njirimara",
@@ -1019,7 +1078,8 @@ const resources = {
       },
       ninRegister: {
         title: "Deba NIN",
-        notice: "Anyị enweghị ike ịchọta NIN gị. Jupụta ụdị a iji debanye NIN gị n'ime usoro. Onye nchịkwa ga-enyocha ya.",
+        notice:
+          "Anyị enweghị ike ịchọta NIN gị. Jupụta ụdị a iji debanye NIN gị n'ime usoro. Onye nchịkwa ga-enyocha ya.",
         ninLabel: "NIN",
         fullName: "Aha zuru ezu",
         email: "Email",

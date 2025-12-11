@@ -125,7 +125,7 @@ const Register = () => {
 
       if (success) {
         const title = 'Registration Successful!';
-        const desc = 'Welcome to DPI. Your account has been created.';
+        const desc = "Welcome to DigiPayG2C. Your account has been created.";
         toast({ title, description: desc });
         speakText(`${title}. ${desc}`, i18n.language);
         navigate('/dashboard');
@@ -170,7 +170,7 @@ const Register = () => {
           <CardHeader className="space-y-1">
             <div className="flex items-center justify-between">
               <CardTitle className="text-2xl font-bold">
-                {t('register')}
+                {t("register")}
               </CardTitle>
               <Link to="/">
                 <Button variant="ghost" size="icon">
@@ -179,160 +179,211 @@ const Register = () => {
               </Link>
             </div>
             <CardDescription>
-              {'Create your DPI account to get started'}
+              {"Create your DigiPayG2C account to get started"}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleRegisterSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="username">{t('username') || 'Username'}</Label>
-                  <Input
-                    id="username"
-                    name="username"
-                    placeholder="Enter your username"
-                    value={formData.username}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="username">{t("username") || "Username"}</Label>
+                <Input
+                  id="username"
+                  name="username"
+                  placeholder="Enter your username"
+                  value={formData.username}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="nin">{t('nin')}</Label>
-                  <Input
-                    id="nin"
-                    name="nin"
-                    placeholder="12345678901"
-                    maxLength={11}
-                    value={formData.nin}
-                    onChange={handleInputChange}
-                    required
-                  />
-                  <p className="text-xs text-muted-foreground">11-digit National Identity Number</p>
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="nin">{t("nin")}</Label>
+                <Input
+                  id="nin"
+                  name="nin"
+                  placeholder="12345678901"
+                  maxLength={11}
+                  value={formData.nin}
+                  onChange={handleInputChange}
+                  required
+                />
+                <p className="text-xs text-muted-foreground">
+                  11-digit National Identity Number
+                </p>
+              </div>
 
-                {formData.nin.length === 11 && (
-                  <div className="space-y-2">
-                    {ninLoading ? (
-                      <p className="text-sm text-muted-foreground">Fetching NIN details...</p>
-                    ) : ninInfo ? (
-                      <div className={`p-4 rounded-lg border ${ninInfo.isVerified ? 'bg-green-50 border-green-300' : 'bg-amber-50 border-amber-300'} mt-2`}>
-                        <div className="flex items-start justify-between mb-3">
-                          <p className="font-semibold">NIN Details Preview</p>
-                          {ninInfo.isVerified ? (
-                            <div className="flex items-center gap-1 bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-medium">
-                              <span>✓</span>
-                              <span>Verified</span>
-                            </div>
-                          ) : (
-                            <div className="flex items-center gap-1 bg-amber-100 text-amber-700 px-2 py-1 rounded text-xs font-medium">
-                              <span>⏱</span>
-                              <span>Pending Verification</span>
-                            </div>
-                          )}
-                        </div>
-                        <div className="grid grid-cols-1 gap-2 text-sm mb-3">
-                          <div><span className="font-medium">Full Name:</span> {ninInfo.fullName}</div>
-                          <div><span className="font-medium">Phone:</span> {ninInfo.phone}</div>
-                          <div><span className="font-medium">Email:</span> {ninInfo.email}</div>
-                        </div>
-                        {!ninInfo.isVerified && (
-                          <div className="bg-white rounded p-3 text-sm text-amber-800 border border-amber-200">
-                            <p className="font-medium mb-1">⚠️ NIN Not Yet Verified</p>
-                            <p>Your NIN has been found in the system but has not been verified by an administrator yet. Please wait for verification to be completed before you can register. This typically takes 24-48 hours.</p>
+              {formData.nin.length === 11 && (
+                <div className="space-y-2">
+                  {ninLoading ? (
+                    <p className="text-sm text-muted-foreground">
+                      Fetching NIN details...
+                    </p>
+                  ) : ninInfo ? (
+                    <div
+                      className={`p-4 rounded-lg border ${
+                        ninInfo.isVerified
+                          ? "bg-green-50 border-green-300"
+                          : "bg-amber-50 border-amber-300"
+                      } mt-2`}
+                    >
+                      <div className="flex items-start justify-between mb-3">
+                        <p className="font-semibold">NIN Details Preview</p>
+                        {ninInfo.isVerified ? (
+                          <div className="flex items-center gap-1 bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-medium">
+                            <span>✓</span>
+                            <span>Verified</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1 bg-amber-100 text-amber-700 px-2 py-1 rounded text-xs font-medium">
+                            <span>⏱</span>
+                            <span>Pending Verification</span>
                           </div>
                         )}
                       </div>
-                    ) : (
-                      <div>
-                        <p className="text-sm text-destructive mb-2">NIN not found or invalid.</p>
+                      <div className="grid grid-cols-1 gap-2 text-sm mb-3">
                         <div>
-                          <Button type="button" onClick={() => setShowNinModal(true)} className="px-3 py-1">Register NIN</Button>
+                          <span className="font-medium">Full Name:</span>{" "}
+                          {ninInfo.fullName}
+                        </div>
+                        <div>
+                          <span className="font-medium">Phone:</span>{" "}
+                          {ninInfo.phone}
+                        </div>
+                        <div>
+                          <span className="font-medium">Email:</span>{" "}
+                          {ninInfo.email}
                         </div>
                       </div>
-                    )}
-                  </div>
-                )}
+                      {!ninInfo.isVerified && (
+                        <div className="bg-white rounded p-3 text-sm text-amber-800 border border-amber-200">
+                          <p className="font-medium mb-1">
+                            ⚠️ NIN Not Yet Verified
+                          </p>
+                          <p>
+                            Your NIN has been found in the system but has not
+                            been verified by an administrator yet. Please wait
+                            for verification to be completed before you can
+                            register. This typically takes 24-48 hours.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div>
+                      <p className="text-sm text-destructive mb-2">
+                        NIN not found or invalid.
+                      </p>
+                      <div>
+                        <Button
+                          type="button"
+                          onClick={() => setShowNinModal(true)}
+                          className="px-3 py-1"
+                        >
+                          Register NIN
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
 
-                <div className="space-y-2">
-                  <Label htmlFor="role">Role</Label>
-                  <select
-                    id="role"
-                    name="role"
-                    value={formData.role}
-                    onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                    className="w-full border rounded px-3 py-2"
+              <div className="space-y-2">
+                <Label htmlFor="role">Role</Label>
+                <select
+                  id="role"
+                  name="role"
+                  value={formData.role}
+                  onChange={(e) =>
+                    setFormData({ ...formData, role: e.target.value })
+                  }
+                  className="w-full border rounded px-3 py-2"
+                >
+                  <option value="citizen">Citizen</option>
+                  <option value="admin">Admin</option>
+                  <option value="agent">Agent</option>
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="password">{t("password")}</Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Create a strong password"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                   >
-                    <option value="citizen">Citizen</option>
-                    <option value="admin">Admin</option>
-                    <option value="agent">Agent</option>
-                  </select>
+                    {showPassword ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
+                  </button>
                 </div>
+              </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="password">{t('password')}</Label>
-                  <div className="relative">
-                    <Input
-                      id="password"
-                      name="password"
-                      type={showPassword ? 'text' : 'password'}
-                      placeholder="Create a strong password"
-                      value={formData.password}
-                      onChange={handleInputChange}
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                    >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">{t("confirmPassword")}</Label>
+                <div className="relative">
+                  <Input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type={showConfirmPassword ? "text" : "password"}
+                    placeholder="Confirm your password"
+                    value={formData.confirmPassword}
+                    onChange={handleInputChange}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
+                  </button>
                 </div>
+              </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">{t('confirmPassword')}</Label>
-                  <div className="relative">
-                    <Input
-                      id="confirmPassword"
-                      name="confirmPassword"
-                      type={showConfirmPassword ? 'text' : 'password'}
-                      placeholder="Confirm your password"
-                      value={formData.confirmPassword}
-                      onChange={handleInputChange}
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                    >
-                      {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
-                </div>
+              <Button type="submit" className="w-full" disabled={!isFormReady}>
+                {loading ? t("loading") : t("register")}
+              </Button>
 
-                <Button type="submit" className="w-full" disabled={!isFormReady}>
-                  {loading ? t('loading') : t('register')}
-                </Button>
+              {!isFormReady && (
+                <p className="text-xs text-muted-foreground mt-2">
+                  {!ninInfo
+                    ? "You must enter a valid NIN to proceed."
+                    : !ninInfo.isVerified
+                    ? "Your NIN is pending verification. You cannot register until it is verified by an administrator."
+                    : "Please complete all required fields with valid information."}
+                </p>
+              )}
 
-                {!isFormReady && (
-                  <p className="text-xs text-muted-foreground mt-2">
-                    {!ninInfo ? 'You must enter a valid NIN to proceed.' : !ninInfo.isVerified ? 'Your NIN is pending verification. You cannot register until it is verified by an administrator.' : 'Please complete all required fields with valid information.'}
-                  </p>
-                )}
-
-                <div className="text-center text-sm">
-                  <span className="text-muted-foreground">{t('alreadyHaveAccount')} </span>
-                  <Link to="/login" className="text-primary hover:underline">
-                    {t('login')}
-                  </Link>
-                </div>
-              </form>
+              <div className="text-center text-sm">
+                <span className="text-muted-foreground">
+                  {t("alreadyHaveAccount")}{" "}
+                </span>
+                <Link to="/login" className="text-primary hover:underline">
+                  {t("login")}
+                </Link>
+              </div>
+            </form>
           </CardContent>
         </Card>
         <p className="mt-6 text-center text-sm text-muted-foreground">
-          By registering, you agree to DPI's Terms of Service and Privacy Policy
+          By registering, you agree to DigiPayG2C's Terms of Service and Privacy
+          Policy
         </p>
       </motion.div>
       <NinRegisterModal
